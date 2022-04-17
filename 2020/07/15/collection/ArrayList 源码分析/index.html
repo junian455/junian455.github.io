@@ -1,0 +1,1368 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>ArrayList 源码分析 | HJ 的学习录</title><meta name="keywords" content="java,ArrayList"><meta name="author" content="阿健君"><meta name="copyright" content="阿健君"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="LinkedList 源码分析ArrayList 集合底层数据结构ArrayList 是由可调整大小的数组实现的，与数组不同的是：数组一旦初始化长度就不可以发生改变，而 ArrayList 长度可变。 数组特点： 增删慢：每次删除元素，都需要更改数组长度、拷贝以及移动元素位置。查询快：由于数组在内存中是一块连续空间，因此可以根据地址 + 索引的方式快速获取对应位置上的元素。ArrayList 继承">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ArrayList 源码分析">
+<meta property="og:url" content="http://example.com/2020/07/15/collection/ArrayList%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="HJ 的学习录">
+<meta property="og:description" content="LinkedList 源码分析ArrayList 集合底层数据结构ArrayList 是由可调整大小的数组实现的，与数组不同的是：数组一旦初始化长度就不可以发生改变，而 ArrayList 长度可变。 数组特点： 增删慢：每次删除元素，都需要更改数组长度、拷贝以及移动元素位置。查询快：由于数组在内存中是一块连续空间，因此可以根据地址 + 索引的方式快速获取对应位置上的元素。ArrayList 继承">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/collection.png">
+<meta property="article:published_time" content="2020-07-15T02:10:00.000Z">
+<meta property="article:modified_time" content="2020-07-15T02:10:00.000Z">
+<meta property="article:author" content="阿健君">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="ArrayList">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/collection.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2020/07/15/collection/ArrayList%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ArrayList 源码分析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2020-07-15 10:10:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/scollbar.css"><link rel="stylesheet" href="/css/bottomsetting.css"><link rel="stylesheet" href="/css/card_categor_hide.css"><link rel="stylesheet" href="/css/article_bak_transparent.css"><link rel="stylesheet" href="/css/index_tag.css"><link rel="stylesheet" href="/css/index_tag2.css"><link rel="stylesheet" href="/css/modify.css"><link rel="stylesheet" href="/css/index_tag3.css"><meta name="generator" content="Hexo 5.4.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="wizard-scene"><div class="wizard-objects"><div class="wizard-square"></div><div class="wizard-circle"></div><div class="wizard-triangle"></div></div><div class="wizard"><div class="wizard-body"></div><div class="wizard-right-arm"><div class="wizard-right-hand"></div></div><div class="wizard-left-arm"><div class="wizard-left-hand"></div></div><div class="wizard-head"><div class="wizard-beard"></div><div class="wizard-face"><div class="wizard-adds"></div></div><div class="wizard-hat"><div class="wizard-hat-of-the-hat"></div><div class="wizard-four-point-star --first"></div><div class="wizard-four-point-star --second"></div><div class="wizard-four-point-star --third"></div></div></div></div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/collection.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">HJ 的学习录</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">ArrayList 源码分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-07-15T02:10:00.000Z" title="发表于 2020-07-15 10:10:00">2020-07-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-07-15T02:10:00.000Z" title="更新于 2020-07-15 10:10:00">2020-07-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E9%9B%86%E5%90%88/">集合</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="ArrayList 源码分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image: url('https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/collection.png');"></div><article class="post-content" id="article-container"><h2 id="LinkedList-源码分析"><a href="#LinkedList-源码分析" class="headerlink" title="LinkedList 源码分析"></a>LinkedList 源码分析</h2><p>ArrayList 集合底层数据结构<br>ArrayList 是由可调整大小的数组实现的，与数组不同的是：数组一旦初始化长度就不可以发生改变，而 ArrayList 长度可变。</p>
+<p>数组特点：</p>
+<p>增删慢：每次删除元素，都需要更改数组长度、拷贝以及移动元素位置。<br>查询快：由于数组在内存中是一块连续空间，因此可以根据地址 + 索引的方式快速获取对应位置上的元素。<br>ArrayList 继承关系<br>JAVA<br>1<br>2<br>public class ArrayList<e> extends AbstractList<e><br>        implements List<e>, RandomAccess, Cloneable, java.io.Serializable<br>Serializable 标记性接口<br>类的序列化由实现 java.io.Serializable 接口的类启用。 不实现此接口的类将不会使任何状态序列化或反序列化。 可序列化类的所有子类型都是可序列化的。 序列化接口没有方法或字段，仅用于标识可串行化的语义。<br>序列化：将对象的数据写入到文件 (写对象)。</e></e></e></p>
+<p>反序列化：将文件中对象的数据读取出来 (读对象)。</p>
+<p>Serializable 源码：</p>
+<p>JAVA<br>1<br>2<br>public interface Serializable {<br>}<br>Cloneable 标记性接口<br>一个类实现 Cloneable 接口来指示 Object.clone () 方法，该方法对于该类的实例进行字段的复制是合法的。在不实现 Cloneable 接口的实例上调用对象的克隆方法会导致异常 CloneNotSupportedException 被抛出。简言：克隆就是依据已经有的数据，创造一份新的完全一样的数据拷贝。</p>
+<p>Cloneable 源码：</p>
+<p>JAVA<br>1<br>2<br>public interface Cloneable {<br>}<br>克隆的前提条件<br>被克隆对象所在的类必须实现 Cloneable 接口</p>
+<p>必须重写 clone 方法</p>
+<p>clone 源码：</p>
+<pre><code class="bash">public Object clone() {
+        try {
+            ArrayList&lt;?&gt; v = (ArrayList&lt;?&gt;) super.clone();
+            v.elementData = Arrays.copyOf(elementData, size);
+            v.modCount = 0;
+            return v;
+        } catch (CloneNotSupportedException e) {
+            // this shouldn't happen, since we are Cloneable
+            throw new InternalError(e);
+        }
+    }
+</code></pre>
+<h2 id="RandomAccess-标记接口"><a href="#RandomAccess-标记接口" class="headerlink" title="RandomAccess 标记接口"></a>RandomAccess 标记接口</h2><p>此标记接口由 List 实现使用，以表明它们支持快速（通常为恒定时间）随机访问。</p>
+<p>此接口的主要目的是允许通用算法更改其行为，以便在应用于随机访问列表或顺序访问列表时提供良好的性能。</p>
+<p>AbstractList 抽象类<br>该类提供了 List 接口的骨架实现，以最小化实现由” 随机存取” 数据存储 (如阵列) 支持的此接口所需的工作量。对于顺序访问数据 (例如链接列表) ，应该使用 AbstractSequentialist 优先于此类。<br>要实现一个不可修改的列表，程序员只需要扩展这个类并提供 get (int) 和 size () 方法的实现。<br>要实现可修改的列表，程序员必须另外覆盖 set (int, E) 方法 (否则将抛出一个 UnsupportedoperationException)。如果列表是可变大小， 则程序员必须另外覆盖 add (int, E) 和 remove (int) 方法。<br>ArrayList 源码分析<br>构造方法<br>Constructor    Constructor 描述<br>ArrayList()    构造一个初始容量为十的空列表。<br>ArrayList(int initialCapacity)    构造具有指定初始容量的空列表。<br>ArrayList(Collection&lt;? extends E&gt; c)    构造一个包含指定集合的元素的列表，按照它们由集合的迭代器返回 的顺序。<br>在源码分析时首先会将涉及的变量、方法等列出来，之后一块进行详细分析！</p>
+<p>无参构造方法</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    //默认空容量的数组,长度为0
+    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {}
+
+    //集合真正存储数据的容器
+    Object[] elementData;
+
+    //集合的大小
+    private int size;
+    
+    //空参构造
+    public ArrayList() {
+        //赋值
+        this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
+</code></pre>
+<p>有参构造方法一</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    // 默认初始容量
+    private static final Object[] EMPTY_ELEMENTDATA = {};
+
+    //指定容量的构造方法
+    public ArrayList(int initialCapacity) {
+        //判断容量是否大于0
+        if (initialCapacity &gt; 0) {
+            //根据构造方法的参数创建指定长度的数据
+            this.elementData = new Object[initialCapacity];
+        } else if (initialCapacity == 0) {
+            //等于0则将空数组的地址赋值给elementData
+            this.elementData = EMPTY_ELEMENTDATA;
+        } else {
+            //以上两个条件都不满足报错
+            throw new IllegalArgumentException("Illegal Capacity: "+
+                                               initialCapacity);
+        }
+    }
+}
+</code></pre>
+<p>有参构造方法二</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    //长度为0的空数组
+    private static final Object[] EMPTY_ELEMENTDATA = {};
+
+    //集合存元素的数组
+    Object[] elementData;
+
+    //集合的长度
+    private int size;
+
+    public ArrayList(Collection&lt;? extends E&gt; c) {
+        // 将集合构造中的集合对象转成数组,且将数组的地址赋值给elementData
+        elementData = c.toArray();
+        // 将elementData的长度赋值给集合长度size,且判断是否不等于 0
+        if ((size = elementData.length) != 0) {
+            // 判断elementData 和 Object[] 是否为不一样的类型
+            if (elementData.getClass() != Object[].class)
+                //如果不一样,使用Arrays的copyOf方法进行元素的拷贝
+                elementData = Arrays.copyOf(elementData, size, Object[].class);
+        } else {
+            // 就把空数组的地址赋值给集合存元素的数组
+            this.elementData = EMPTY_ELEMENTDATA;
+        }
+    }
+
+    //将集合转数组的方法
+    public Object[] toArray() {
+        //调用数组工具类的方法
+        return Arrays.copyOf(elementData, size);
+    }
+}
+
+//Arrays类
+class Arrays {
+    public static &lt;T&gt; T[] copyOf(T[] original, int newLength) {
+        //再次调用方法进行拷贝
+        return (T[]) copyOf(original, newLength, original.getClass());
+    }
+
+    public static &lt;T,U&gt; T[] copyOf(U[] original, int newLength, Class&lt;? extends T[]&gt; newType) {
+        @SuppressWarnings("unchecked")
+        //不管三元运算符的结果如何,都会创建一个新的数组
+        //新数组的长度一定是和集合的size一样
+        T[] copy = ((Object)newType == (Object)Object[].class)
+            ? (T[]) new Object[newLength]
+            : (T[]) Array.newInstance(newType.getComponentType(), newLength);
+        //数组的拷贝
+        System.arraycopy(original, 0, copy, 0,
+                         Math.min(original.length, newLength));
+       //返回拷贝元素成功后的数组
+        return copy;
+    }
+}
+</code></pre>
+<p>添加方法<br>方法名    描述<br>public boolean add(E e)    将指定的元素追加到此列表的末尾。<br>public void add(int index, E element)    在此列表中的指定位置插入指定的元素。<br>public boolean addAll(Collection&lt;? extends E&gt; c)    按指定集合的 Iterator 返回的顺序将指定集合中的所有元素 追加到此列表的末尾。<br>public boolean addAll(int index, Collection&lt;? extends E&gt; c)    将指定集合中的所有元素插入到此列表中，从指定的位置 开始。<br>public boolean add (E e) 添加单个元素：</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>5<br>6<br>public class ArrayTest {<br>    public static void main(String[] args) {<br>        ArrayList<string> list = new ArrayList&lt;&gt;();<br>        list.add(“程序员”);<br>    }<br>}<br>源码：</string></p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    //长度为0的空数组
+    private static final Object[] EMPTY_ELEMENTDATA = {};
+
+    //默认容量为空的数组（无参构造调用）
+    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+
+    //集合真实存元素的数组
+    Object[] elementData;
+
+    //集合的长度
+    private int size;
+
+    //默认的容量
+    private static final int DEFAULT_CAPACITY = 10;
+
+    //将添加的数据传入给 e
+    public boolean add(E e) {
+        //调用方法对内部容量进行校验
+        ensureCapacityInternal(size + 1); //minCapacity=1
+        elementData[size++] = e;
+        return true;
+    }
+
+    private void ensureCapacityInternal(int minCapacity) {
+        //判断集合存数据的数组是否等于空容量的数组（无参构造肯定两者相等）
+        if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
+            //通过最小容量和默认容量 求出较大值 (用于第一次扩容)
+            minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);//minCapacity=10
+        }
+        //将if中计算出来的容量传递给下一个方法,继续校验
+        ensureExplicitCapacity(minCapacity);
+    }
+
+    private void ensureExplicitCapacity(int minCapacity) {
+        //实际修改集合次数++ (在扩容的过程中没用,主要是用于迭代器中)
+        modCount++;
+        //判断最小容量 - 数组长度是否大于 0
+        if (minCapacity - elementData.length &gt; 0)
+            //将第一次计算出来的容量传递给 核心扩容方法(grow)
+            grow(minCapacity);
+    }
+
+    private void grow(int minCapacity) {
+        //记录数组的实际长度,此时由于木有存储元素,长度为0
+        int oldCapacity = elementData.length;
+        // &gt;&gt; : 右移,右移几位就相当于除以2的几次幂
+        // &lt;&lt; : 左移,左移几位就相当于乘以2的几次幂
+        //扩容的核心算法: 原容量的1.5倍
+        int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);
+        //判断新容量 - 最小容量 是否小于 0, 如果是第一次调用add方法必然小于0
+        if (newCapacity - minCapacity &lt; 0)
+            //还是将最小容量赋值给新容量
+            newCapacity = minCapacity; //newCapacity=10
+        //判断新容量-最大数组大小 是否&gt;0,如果条件满足就计算出一个超大容量
+        if (newCapacity - MAX_ARRAY_SIZE &gt; 0)
+            newCapacity = hugeCapacity(minCapacity);
+        // minCapacity is usually close to size, so this is a win:
+        // 调用数组工具类方法,创建一个新数组,将新数组的地址赋值给elementData
+        elementData = Arrays.copyOf(elementData, newCapacity);
+    }
+
+
+ }
+</code></pre>
+<p>public void add (int index, E element) 在指定索引处添加元素 ：</p>
+<pre><code class="bash">public class ArrayTest {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add("黑马程序员");
+        list.add("传智播客");
+        list.add("传智大学");
+        list.add(1,"长沙校区");
+        System.out.println(list);
+    }
+}
+</code></pre>
+<p>源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    //长度为0的空数组
+    private static final Object[] EMPTY_ELEMENTDATA = {};
+
+    //默认容量为空的数组
+    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+
+    //集合存元素的数组
+    Object[] elementData;
+
+    //集合的长度
+    private int size;
+
+    //默认的容量
+    private static final int DEFAULT_CAPACITY = 10;
+
+    public void add(int index, E element) {
+            //添加范围检查
+            rangeCheckForAdd(index);
+        //调用方法检验是否要扩容,且让增量++
+        ensureCapacityInternal(size + 1);  // Increments modCount!!
+        System.arraycopy(elementData, index, elementData, index + 1,
+                         size - index);
+        elementData[index] = element;
+        size++;
+    }
+    private void rangeCheckForAdd(int index) {
+        //超出指定范围就报错
+        if (index &gt; size || index &lt; 0)
+            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+    }
+   
+    private void ensureCapacityInternal(int minCapacity) {
+        if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
+            minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
+        }
+        
+        ensureExplicitCapacity(minCapacity);
+    }
+
+    private void ensureExplicitCapacity(int minCapacity) {
+       //增量++ (也就是实际修改集合的次数)
+       modCount++;
+
+        //只有容量不够的情况下才会调用 核心扩容的grow方法
+        //如果再调用 add(index,element) 方法之前已经扩容,那么源码跟踪到此结束
+       if (minCapacity - elementData.length &gt; 0)
+           grow(minCapacity);
+     }
+
+ }
+</code></pre>
+<p>image-20210525095343406<br>public boolean addAll (Collection&lt;? extends E&gt; c) 将集合的所有元素一次性添加到集合：</p>
+<pre><code class="bash">public class ArrayTest {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add("黑马程序员");
+        list.add("传智播客");
+        list.add("传智大学");
+
+        ArrayList&lt;String&gt; list1 = new ArrayList&lt;&gt;();
+        list1.addAll(list);
+    }
+}
+</code></pre>
+<p>源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    //长度为0的空数组
+    private static final Object[] EMPTY_ELEMENTDATA = {};
+
+    //默认容量为空的数组
+    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+
+    //集合存元素的数组
+    Object[] elementData;
+
+    //集合的长度
+    private int size;
+
+    //默认的容量
+    private static final int DEFAULT_CAPACITY = 10;
+
+    public boolean addAll(Collection&lt;? extends E&gt; c) {
+        //把有数据的集合转成数组
+        Object[] a = c.toArray();
+        //有数据集合长度赋值给numNew
+        int numNew = a.length;
+        //调用方法检验是否要扩容,且让增量++
+        ensureCapacityInternal(size + numNew);  // Increments modCount
+        //调用方法将a数组的元素拷贝到elementData数组中
+        System.arraycopy(a, 0, elementData, size, numNew);
+        //集合的长度+=a数组的长度
+        size += numNew;
+        //只要a数组的长度不等于0,即说明添加成功
+        return numNew != 0;
+    }
+
+ }
+</code></pre>
+<p> //结论:底层使用了System.arraycopy方法进行了拷贝<br>public boolean addAll (int index, Collection&lt;? extends E&gt; c) 在指定的索引位置添加集合：</p>
+<pre><code class="bash">public class ArrayTest {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add("黑马程序员");
+        list.add("传智播客");
+        list.add("传智大学");
+
+        ArrayList&lt;String&gt; list1 = new ArrayList&lt;&gt;();
+        list.add("酷丁鱼");
+        list.add("博学谷")
+        list1.addAll(l1,ist);
+    }
+}
+</code></pre>
+<p>源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    //长度为0的空数组
+    private static final Object[] EMPTY_ELEMENTDATA = {};
+
+    //默认容量为空的数组
+    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+
+    //集合存元素的数组
+    Object[] elementData;
+
+    //集合的长度
+    private int size;
+
+    //默认的容量
+    private static final int DEFAULT_CAPACITY = 10;
+
+     public boolean addAll(int index, Collection&lt;? extends E&gt; c) {
+        //校验索引
+        rangeCheckForAdd(index);
+        //将数据源转成数组
+        Object[] a = c.toArray();
+        //记录数据源的长度 3
+        int numNew = a.length;
+        //目的就是为了给集合存储数据的数组进行扩容
+        ensureCapacityInternal(size + numNew);
+
+        //numMoved: 要移动元素的个数 --&gt; 1个
+        //numMoved: 集合list1的长度-调用addAll的第一个参数 (索引1)
+        int numMoved = size - index;
+        //判断需要移动的个数是否大于0
+        if (numMoved &gt; 0)
+            //先使用System中的方法arraycopy将需要移动的数据进行移动
+            System.arraycopy(elementData, index, elementData, index + numNew, numMoved);
+        //将数据源(list)中的所有数据添加到list1中（中间空的位置中）
+        System.arraycopy(a, 0, elementData, index, numNew);
+        size += numNew;
+        return numNew != 0;
+    }
+
+    private void rangeCheckForAdd(int index) {
+        if (index &gt; size || index &lt; 0)
+            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+    }
+ }
+
+public final class System {
+
+      /*参数:
+            src - 源数组。
+            srcPos - 源数组中的起始位置。
+            dest - 目标数组。
+            destPos - 目的地数据中的起始位置。
+            length - 要复制的数组元素的数量。 */
+
+    public static void arraycopy(Object src,int srcPos,Object dest,int destPos,int length)
+}
+</code></pre>
+<blockquote>
+<p>如何计算元素移动的位置 &amp; 数量：</p>
+</blockquote>
+<pre><code class="bash">public class ArrayCopyMethodTest {
+    public static void main(String[] args) {
+        String[] a = {"黑马程序员","传智播客","传智大学"};
+        String[] arr = {"酷丁鱼","博学谷",null,null,null,null,null,null,null,null};
+  
+        //获取数据源的长度 3
+        int numNew = a.length;
+        
+        //numMoved = 集合真实长度 - 要存的索引位置
+        //要移动元素的个数为:1
+        int numMoved = 2 - 1;
+        
+        //判断是否需要移动元素
+        if (numMoved &gt; 0)
+            //src - 源数组。
+            //srcPos - 源数组中的起始位置。
+            //dest - 目标数组。
+            //destPos - 目的地数据中的起始位置。
+            //length - 要复制的数组元素的数量
+            System.arraycopy(arr, 1, arr, 4,
+                    numMoved);
+
+        System.out.println(Arrays.toString(arr));
+    }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code class="bash">[酷丁鱼, 博学谷, null, null, 博学谷, null, null, null, null, null]
+</code></pre>
+<p>删除方法<br>public E remove (int index) 根据索引删除元素：</p>
+<pre><code class="bash">public class Test01 {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add("山东大李逵");
+        list.add("天魁星宋江");
+        list.add("天罡星卢俊义");
+        list.add("西门大人");
+     //根据索引删除元素
+     String value = list.remove(3);
+     System.out.println("删除的元素为: "+value);
+     System.out.println("集合的元素: "+list);
+  }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code class="bash">删除的元素为: 西门大人
+集合的元素: [山东大李逵, 天魁星宋江, 天罡星卢俊义]
+</code></pre>
+<p>源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    public E remove(int index) {
+        //范围校验
+        rangeCheck(index);
+        //增量++
+        modCount++;
+        //将index对应的元素赋值给 oldValue
+        E oldValue = elementData(index);
+        //计算集合需要移动元素个数
+        int numMoved = size - index - 1;
+        //如果需要移动元素个数大于0,就使用arrayCopy方法进行拷贝
+        //注意:数据源和数据目的都ntData
+        if (numMoved &gt; 0)
+            System.arraycopy(elementData, index+1, elementData, index,
+            numMoved);
+        //将源集合最后一个元素置为null,尽早让垃圾回收机制对其进行回收
+        elementData[--size] = null;
+        //返回被删除的元素
+        return oldValue;
+    }
+}
+</code></pre>
+<blockquote>
+<p>public boolean remove (Object o) 根据元素删除元素：</p>
+</blockquote>
+<pre><code class="bash">public class Test01 {
+    public static void main(String[] args) {
+    ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();
+    list.add("山东大李逵");
+    list.add("天魁星宋江");
+    list.add("西门大人");
+    list.add("天罡星卢俊义");
+    //根据索引删除元素效果
+    boolean flag = list.remove("西门大人");
+    System.out.println("是否删除成功: "+flag);
+    System.out.println("集合的元素: "+list);
+    }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code class="bash">是否删除成功: true
+集合的元素: [山东大李逵, 天魁星宋江, 天罡星卢俊义]
+</code></pre>
+<p>源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    public boolean remove(Object o) {
+        //判断要删除的元素是否为null
+        if (o == null) {
+            //遍历集合
+            for (int index = 0; index &lt; size; index++)
+                //判断集合的元素是否为null
+                if (elementData[index] == null) {
+                    //如果相等,调用fastRemove方法快速删除
+                    fastRemove(index);
+                    return true;
+                }
+        } else {
+            //遍历集合
+            for (int index = 0; index &lt; size; index++)
+                //用o对象的equals方法和集合每一个元素进行比较
+                if (o.equals(elementData[index])) {
+                    //如果相等,调用fastRemove方法快速删除
+                    fastRemove(index);
+                    return true;
+                }
+            } 
+        //如果集合没有o该元素,那么就会返回false
+        return false;
+    } 
+    private void fastRemove(int index) {3.5 修改方法
+        //增量++
+        modCount++;
+        //计算集合需要移动元素的个数
+        int numMoved = size - index - 1;            
+        //如果需要移动的个数大于0,调用arrayCopy方法进行拷贝
+        if (numMoved &gt; 0)
+            System.arraycopy(elementData, index+1, elementData, index,numMoved);
+        //将集合最后一个元素置为null,尽早被释放            
+        elementData[--size] = null;
+    }
+}
+</code></pre>
+<p>修改方法<br>public E set (int index, E element) 根据索引修改集合元素源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    public E set(int index, E element) {
+        //校验索引
+        rangeCheck(index);
+        //根据索引取出元素 --&gt; 被替换的元素
+        E oldValue = elementData(index);
+        //把element存入到elementData数组中
+        elementData[index] = element;
+        //返回被替换的元素
+        return oldValue;
+    }
+
+    private void rangeCheck(int index) {
+        if (index &gt;= size)
+            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+    }
+ }
+</code></pre>
+<p>获取方法<br>public E get (int index) 根据索引获取元素源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    public E get(int index) {
+        //校验索引
+        rangeCheck(index);
+        //根据索引获取数组(集合)中的元素
+        return elementData(index);
+    }
+
+    private void rangeCheck(int index) {
+        if (index &gt;= size)
+            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+    }
+ }
+</code></pre>
+<p>转换方法<br>ArrayList 中的 toString 方法继承于它的爷爷类 AbstractCollection，继承关系如下：</p>
+<p>image-20210525144352412</p>
+<p>public String toString () 把集合所有数据转换成字符串源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    //长度为0的空数组
+    private static final Object[] EMPTY_ELEMENTDATA = {};
+    //默认容量为空的数组
+    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+    //集合存元素的数组
+    Object[] elementData;
+    //集合的长度
+    private int size;
+    //默认的容量
+    private static final int DEFAULT_CAPACITY = 10;
+ }
+
+ //ArrayList集合的亲爷爷类
+ public abstract class AbstractCollection&lt;E&gt; {
+
+    public String toString() {
+        //获取迭代器
+        Iterator&lt;E&gt; it = iterator();
+        //判断迭代器是否有元素
+        if (! it.hasNext())
+            return "[]";
+        //创建StringBuilder
+        StringBuilder sb = new StringBuilder();
+        //先追加了'['
+        sb.append('[');
+        //无限循环
+        for (;;) {
+            //调用迭代器的next方法取出元素,且将光标向下移动
+            E e = it.next();
+            //三元判断
+            sb.append(e == this ? "(this Collection)" : e);//拼接元素
+            if (! it.hasNext())
+                //没有元素,在缓冲区的最后追加']',且把整个缓冲区的数据转成字符串
+                //然后再结束该方法
+                return sb.append(']').toString();
+
+            //有元素,就直接追加
+            sb.append(',').append(' ');
+        }
+    }
+ }
+</code></pre>
+<p>迭代器<br>public Iterator iterator () 普通迭代器源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    //长度为0的空数组
+    private static final Object[] EMPTY_ELEMENTDATA = {};
+
+    //默认容量为空的数组
+    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+
+    //集合存元素的数组
+    Object[] elementData;
+
+    //集合的长度
+    private int size;
+
+    //默认的容量
+    private static final int DEFAULT_CAPACITY = 10;
+
+    //获取迭代器的方法
+    public Iterator&lt;E&gt; iterator() {
+        //创建了一个对象
+        return new Itr();
+    }
+
+    //ArrayList集合的内部类 --&gt; 迭代器的源码
+    private class Itr implements Iterator&lt;E&gt; {
+        int cursor;       // 光标,默认值就是0,用来指向元素的位置
+        int lastRet = -1; // 记录-1
+        // 将集合实际修改次数赋值给预期修改次数，用来判断并发安全性
+        int expectedModCount = modCount;
+
+        //判断集合是否有元素
+        public boolean hasNext() {
+            //即光标不等于size时，证明集合还有元素没有遍历完，而光标等于size时，说明元素遍历完毕。
+            return cursor != size;
+        }
+
+        //遍历元素
+        public E next() {
+            checkForComodification();
+            //光标（0）赋值给i
+            int i = cursor; //i=0
+            //判断,如果大于集合的size就说明没有元素了
+            if (i &gt;= size)
+                throw new NoSuchElementException();
+            //把集合存储数据数组的地址赋值给该方法的局部变量
+            Object[] elementData = ArrayList.this.elementData;
+            //进行判断,如果条件满足就会产生并发修改异常
+            if (i &gt;= elementData.length)
+                throw new ConcurrentModificationException();
+            //光标自增
+            cursor = i + 1;
+            //从数组中取出元素且返回
+            return (E) elementData[lastRet = i];
+        }
+
+        //校验预期修改集合次数是否和实际修改集合次数一样
+        final void checkForComodification() {
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
+        }
+    }
+
+ }
+</code></pre>
+<p>案例：已知集合：List list = new ArrayList (); 里面有三个元素：”hello”、”Java”、”PHP”，使用迭代器遍历集合看有没有”PHP” 这个元素，如果有，就使用集合对象删除该元素：</p>
+<pre><code class="bash">public class Test01 {
+    public static void main(String[] args) {
+        //创建集合对象
+        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+        //添加元素
+        list.add("hello");
+        list.add("Java");
+        list.add("PHP");
+        //获取迭代器
+        Iterator&lt;String&gt; it = list.iterator();
+        //遍历集合
+        while (it.hasNext()) {
+            String s = it.next();
+            if(s.equals("PHP")) {
+                list.remove("PHP");
+            }
+        }
+    }
+}
+</code></pre>
+<p>控制台结果：并发修改异常：</p>
+<pre><code class="bash">Exception in thread "main" java.util.ConcurrentModificationException at
+java.util.ArrayList$Itr.checkForComodification(ArrayList.java:901) at
+java.util.ArrayList$Itr.next(ArrayList.java:851) at cn.heu.method.Test01.main(Test01.java:24)
+</code></pre>
+<p>源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    public Iterator&lt;E&gt; iterator() {
+        return new Itr();
+    } 
+    //ArrayList内部类
+    //一定要注意观察 Itr 类中的几个成员变量
+    private class Itr implements Iterator&lt;E&gt; {
+        int cursor; // 下一个要返回元素的索引
+        int lastRet = -1; // 最后一个返回元素的索引
+        //将实际修改集合次数 赋值 给预期修改次数
+        //在迭代的过程中,只要实际修改次数和预期修改次数不一致就会产生并发修改异常
+        //由于expectedModCount是Itr的成员变量,那么只会被赋值一次!!!
+        //同时由于集合调用了三次add方法,那么实际修改集合次数就是 3,因此    expectedModCount的值也是 3
+        int expectedModCount = modCount;
+        //判断集合元素为后面是否还有元素
+        public boolean hasNext() {
+            return cursor != size;
+        }
+        
+        
+        //获取元素的方法
+        public E next() {
+            //每次获取元素,会先调用该方法校验 预期修改次数是否 == 实际修改次数
+            checkForComodification();
+            //把下一个元素的索引赋值给i
+            int i = cursor;
+            //判断是否有元素
+            if (i &gt;= size)
+                throw new NoSuchElementException();
+            //将集合底层存储数据的数组赋值给迭代器的局部变量 elementData
+            Object[] elementData = ArrayList.this.elementData;
+            //再次判断,如果下一个元素的索引大于集合底层存储元素的长度 并发修改异常
+            if (i &gt;= elementData.length)
+                throw new ConcurrentModificationException();
+            //每次成功获取到元素,下一个元素的索引都是当前索引+1
+            cursor = i + 1;
+            //返回元素
+            return (E) elementData[lastRet = i];
+        } 
+        final void checkForComodification() {
+            //如果预期修改次数 和 实际修改次数不相等 就产生并发修改异常
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
+        }
+    }
+    
+    
+    //集合的remove方法
+    public boolean remove(Object o) {
+        if (o == null) {
+            for (int index = 0; index &lt; size; index++)
+                if (elementData[index] == null) {
+                    fastRemove(index);
+                    return true;
+                }
+                } else {
+                    for (int index = 0; index &lt; size; index++)
+                        if (o.equals(elementData[index])) {
+                            fastRemove(index);
+                            return true;
+                        }
+                } 
+                return false;
+            } 
+            
+    //快速删除方法
+    private void fastRemove(int index) {
+        //最最最关键的一个操作,集合实际修改次数++,那么这个时候由原来的3变成4
+        //but迭代器的预期修改次数还是3!!!
+        modCount++;
+        int numMoved = size - index - 1;
+        if (numMoved &gt; 0)
+            System.arraycopy(elementData, index+1, elementData, index, numMoved);
+        //还有一个很关键的操作,集合的长度也发生了改变
+        elementData[--size] = null;
+    }
+}
+</code></pre>
+<p>案例二：已知集合：List list = new ArrayList (); 里面有三个元素：”hello”、”PHP”、”JavaSE”，使用迭代器遍历集合看有没有”PHP” 这个元素，如果有，就使用集合对象删除该元素：</p>
+<pre><code class="bash">public class Test01 {
+    public static void main(String[] args) {
+        //创建集合对象
+        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+        //添加元素
+        list.add("hello");
+        list.add("PHP");
+        list.add("Java");
+        //获取迭代器
+        Iterator&lt;String&gt; it = list.iterator();
+        //遍历集合
+        while (it.hasNext()) {
+            String s = it.next();
+            if(s.equals("PHP")) {
+                list.remove("PHP");
+            }
+        }
+    }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code class="bash">[hello,Java]
+</code></pre>
+<p>问题：使用迭代器遍历集合的时候，集合自身修改了长度，但是却没有产生并发修改异常！为什么？</p>
+<p>image-20210526092755956</p>
+<p>default void remove () 迭代器中的 remove 方法，删除集合中的元素：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    public Iterator&lt;E&gt; iterator() {
+        return new Itr();
+    } 
+    //ArrayList内部类
+    //一定要注意观察 Itr 类中的几个成员变量
+    private class Itr implements Iterator&lt;E&gt; {
+        int cursor; // 下一个要返回元素的索引
+        int lastRet = -1; // 最后一个返回元素的索引
+        //将实际修改集合次数 赋值 给预期修改次数
+        //在迭代的过程中,只要实际修改次数和预期修改次数不一致就会产生并发修改异常
+        //由于expectedModCount是Itr的成员变量,那么只会被赋值一次!!!
+        //同时由于集合调用了三次add方法,那么实际修改集合次数就是 3,因此    expectedModCount的值也是 3
+        int expectedModCount = modCount;
+        //判断集合元素为后面是否还有元素
+        public boolean hasNext() {
+            return cursor != size;
+        }
+        
+        
+        //迭代器删除元素方法
+        public void remove() {
+            //判断最后返回元素的索引是否小于0,满足条件就产生 非法状态异常
+            if (lastRet &lt; 0)
+                throw new IllegalStateException();
+            //校验是否会产生并发修改异常,第一次调用不会,因为与其修改次数和实际修改次数一致
+            checkForComodification();
+            try {
+                //真正删除集合元素的方法,调用方法为ArrayList的方法remove,且将0作为参数进行传递
+                ArrayList.this.remove(lastRet);
+                //将lastRet赋值给cursor
+                cursor = lastRet;
+                //再次等于-1
+                lastRet = -1;
+                //再次将集合实际修改次数赋值给预期修改次数,那么这个时候不管集合自身是否删除成功
+                //那么实际修改次数和预期修改次数又一致了,所以并不会产生并发修改异常
+                expectedModCount = modCount;
+            } catch (IndexOutOfBoundsException ex) {
+                    throw new ConcurrentModificationException();
+            }
+        }
+        
+        final void checkForComodification() {
+            //如果预期修改次数 和 实际修改次数不相等 就产生并发修改异常
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
+        }
+    }
+</code></pre>
+<p>结论：</p>
+<p>迭代器 remove 方法底层调用的还是集合自身的 remove 方法删除元素；<br>之所以不会产生并发修改异常，其原因是因为在迭代器的 remove 方法中会再次将集合实际修改次数赋值给预期修改次数 。<br>清空方法<br>public void clear () 清空集合所有数据源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    public void clear() {
+        //实际修改集合次数++
+        modCount++;
+        //遍历集合,将集合每一个索引对应位置上的元素都置为null,尽早让其释放
+        for (int i = 0; i &lt; size; i++)
+            elementData[i] = null;
+        //集合长度更改为0
+        size = 0;
+    }
+}
+</code></pre>
+<p>包含方法<br>public boolean contains (Object o) 判断集合是否包含指定元素源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    //源码contains方法
+    public boolean contains(Object o) {
+        //调用indexOf方法进行查找
+        return indexOf(o) &gt;= 0;
+    }
+    
+    public int indexOf(Object o) {
+        //如果元素是null,也进行遍历操作
+        //因为集合中有可能够会存储null
+        if (o == null) {
+            for (int i = 0; i &lt; size; i++)
+                if (elementData[i]==null)
+                    return i;
+        } else {
+            for (int i = 0; i &lt; size; i++)
+                if (o.equals(elementData[i]))
+                    return i;
+        } 
+        
+        //如果没有走if,也没有走else,那么就说明o该元素在集合中不存在
+        return -1;
+    }
+}
+</code></pre>
+<p>判断集合是否为空<br>源码分析：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    public boolean isEmpty() {
+        return size == 0;
+    }
+}
+</code></pre>
+<p>面试题<br>ArrayList 是如何扩容的？<br>见上面的构造方法，简单说就是：第一次扩容 10，以后每次都是原容量的 1.5 倍。</p>
+<p>ArrayList 频繁扩容导致添加性能急剧下降，如何处理？<br>解决方法：直接指定一个大容量的集合。但这种优化方式只针对特定的场景，如果添加的元素是少量的、未知的，不推荐使用 。</p>
+<p>ArrayList 插入或删除元素一定比 LinkedList 慢么？<br>根据索引删除 ：ArrayList 和 LinkedList 对比 ：</p>
+<pre><code class="bash">public class Test02 {
+    public static void main(String[] args) {
+        //创建ArrayList集合对象
+        ArrayList&lt;String&gt; arrayList = new ArrayList&lt;String&gt;();
+        //添加500W个元素
+        for (int i = 0; i &lt; 5000000; i++) {
+            arrayList.add(i+"小黑");
+        }
+        //获取开始时间
+        long startTime = System.currentTimeMillis();
+        //根据索引删除ArrayList集合元素
+        //删除索引5000对应的元素
+        String value = arrayList.remove(50000);
+        System.out.println(value);
+        //获取结束时间
+        long endTime = System.currentTimeMillis();
+        System.out.println("ArrayList集合删除元素的时间: "+(endTime-startTime));
+
+        //创建LinkedList集合对象
+        LinkedList&lt;String&gt; linkedList = new LinkedList&lt;String&gt;();
+        //添加500W个元素
+        for (int i = 0; i &lt; 5000000; i++) {
+            linkedList.add(i+"小黑");
+        }
+        //获取开始时间
+        startTime = System.currentTimeMillis();
+        //根据索引删除LinkedList集合元素
+        //删除索引5000对应的元素
+        value = arrayList.remove(50000);
+        System.out.println(value);
+        endTime = System.currentTimeMillis();
+        System.out.println("LinkedList集合删除元素的时间: "+(endTime-startTime));
+    }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code class="bash">50000小黑
+ArrayList集合删除元素的时间: 10
+50001小黑
+LinkedList集合删除元素的时间: 44
+</code></pre>
+<p>源码分析：</p>
+<p>ArrayList 根据索引删除元素源码：</p>
+<pre><code class="bash">public class ArrayList&lt;E&gt; {
+    public E remove(int index) {
+        //范围校验
+        rangeCheck(index);
+        //增量++
+        modCount++;
+        //将index对应的元素赋值给 oldValue
+        E oldValue = elementData(index);
+        //计算集合需要移动元素个数
+        int numMoved = size - index - 1;
+        //如果需要移动元素个数大于0,就使用arrayCopy方法进行拷贝
+        //注意:数据源和数据目的都ntData
+        if (numMoved &gt; 0)
+            System.arraycopy(elementData, index+1, elementData, index,
+            numMoved);
+        //将源集合最后一个元素置为null,尽早让垃圾回收机制对其进行回收
+        elementData[--size] = null;
+        //返回被删除的元素
+        return oldValue;
+    }
+}
+</code></pre>
+<blockquote>
+<p>LinkedList 根据索引删除元素源码：</p>
+</blockquote>
+<pre><code class="bash">public class LinkedList&lt;E&gt; {
+
+    //LinkedList集合删除的方法
+    public E remove(int index) {
+        //调用方法校验元素的索引
+        checkElementIndex(index);
+        //先调用node(index)方法,找到需要删除的索引
+        //再调用unlink方法解开链条
+        return unlink(node(index));
+    }
+
+    //校验索引是否在合法范围之内,不在就报错
+    private void checkElementIndex(int index) {
+        if (!isElementIndex(index))
+            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+    }
+
+    //校验
+    private boolean isElementIndex(int index) {
+        return index &gt;= 0 &amp;&amp; index &lt; size;
+    }
+
+    //获取要删除的元素
+    Node&lt;E&gt; node(int index) {
+        //不管索引是多少,在源码底层都会对整个链表上的元素进行折半的动作
+        //如果要删除元素的索引小于集合长度的一半,那么就从头节点一个个的往后找
+        //如果要删除元素的索引大于集合长度的一半,那么就从尾节点一个个的往后找
+        //(注:这个查找的效率相对于ArrayList集合来说较低)
+        if (index &lt; (size &gt;&gt; 1)) {
+            Node&lt;E&gt; x = first;
+            //从头节点开始往后找
+            for (int i = 0; i &lt; index; i++)
+                //获取下一个节点
+                x = x.next;
+            //返回找到的节点
+            return x;
+        } else {
+            Node&lt;E&gt; x = last;
+            //从最后一个位置往前找
+            for (int i = size - 1; i &gt; index; i--)
+                //获取前一个节点
+                x = x.prev;
+            //返回找到的节点
+            return x;
+        }
+    }
+
+    //解开链表,让前后节点相互记录地址
+    E unlink(Node&lt;E&gt; x) {
+        //获取要删除的元素
+        final E element = x.item;
+        //获取被删除节点下一个节点的地址
+        final Node&lt;E&gt; next = x.next;
+        //获取被删除节点下一个节点的地址
+        final Node&lt;E&gt; prev = x.prev;
+
+        //如果被删除节点的上一个节点为null,就让被删除节点的下一个节点成为首节点
+        if (prev == null) {
+            first = next;
+        } else {
+            //否则,被删除元素上一个节点的 下一个节点 变成 被删除元素的下一个节点
+            prev.next = next;
+            //被删除元素的上一个节点置为null,即断开删除元素与上一个元素的链条
+            x.prev = null;
+        }
+        //如果被删除元素的下一个节点为null,最后一个节点就等于被删除元素的上一个节点
+        if (next == null) {
+            last = prev;
+        } else {
+            //否则,被删除节点的下一个节点 等于被删除节点的前一个节点
+            next.prev = prev;
+            //被删除元素的下一个节点置为null,即断开删除元素与后面元素的链条
+            x.next = null;
+        }
+        //被删除元素的内容置为null
+        x.item = null;
+        //集合长度--
+        size--;
+        //实际修改集合的次数自增
+        modCount++;
+        //返回被删除的元素
+        return element;
+    }
+}
+</code></pre>
+<p>结论：</p>
+<p>数组删除元素确实要比链表慢，慢在需要创建新数组，还有比较麻烦的数据拷贝，但是在 ArrayList 底层不是每次操作元素都需要扩容，因此在这个方面相对于链表来说数组的性能更好。</p>
+<p>LinkedList 删除元素之所以效率并不高，其原理在于底层先需要对整个集合进行折半的动作，然后又需要对集合进行遍历一次，这些操作导致效率变低 。</p>
+<p>根据元素删除：ArrayList 和 LinkedList 对比：</p>
+<pre><code class="bash">public class ArrayTest {
+    public static void main(String[] args) {
+
+        //创建ArrayList集合对象
+        ArrayList&lt;String&gt; arrayList = new ArrayList&lt;String&gt;();
+        //添加500W个元素
+        for (int i = 0; i &lt; 5000000; i++) {
+            arrayList.add(i+"XXX");
+        } //获取开始时间
+        long startTime = System.currentTimeMillis();
+        //根据元素删除ArrayList集合元素
+        //删除元素为 "5000XXX"
+        boolean b = arrayList.remove("5000XXX");
+        System.out.println("删除的状态: "+b);
+        //获取结束时间
+        long endTime = System.currentTimeMillis();
+        System.out.println("ArrayList集合删除元素的时间: "+(endTime-startTime));
+        //创建LinkedList集合对象
+        LinkedList&lt;String&gt; linkedList = new LinkedList&lt;String&gt;();
+        //添加500W个元素
+        for (int i = 0; i &lt; 5000000; i++) {
+            linkedList.add(i+"XXX");
+        }
+        //获取开始时间
+        startTime = System.currentTimeMillis();
+        //根据元素删除LinkedList集合元素
+        //删除元素为 "5000XXX"
+        b = linkedList.remove("5000XXX");
+        System.out.println("删除的状态: "+b);
+        endTime = System.currentTimeMillis();
+        System.out.println("LinkedList集合删除元素的时间: "+(endTime-startTime));
+    }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code class="bash">删除的状态: true
+ArrayList集合删除元素的时间: 10
+删除的状态: true
+LinkedList集合删除元素的时间: 5
+</code></pre>
+<p>ArrayList 根据元素删除元素的源码见上面解析！</p>
+<p>LinkedList 根据元素删除元素 ：</p>
+<pre><code class="bash">public class LinkedList&lt;E&gt; {
+    public boolean remove(Object o) {
+        //判断要删除的元素是否为null
+        //不管是否为null都从第一个元素开始,从头部往后找
+        //找到之后,调用unlink方法进行解绑,更改节点和节点之间记录的地址
+        if (o == null) {
+            for (Node&lt;E&gt; x = first; x != null; x = x.next) {
+                if (x.item == null) {
+                    unlink(x);
+                    return true;
+                }
+            }
+        } else {
+            for (Node&lt;E&gt; x = first; x != null; x = x.next) {
+                if (o.equals(x.item)) {
+                    unlink(x);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    E unlink(Node&lt;E&gt; x) {
+        // assert x != null;
+        final E element = x.item;
+        final Node&lt;E&gt; next = x.next;
+        final Node&lt;E&gt; prev = x.prev;
+
+        if (prev == null) {
+            first = next;
+        } else {
+            prev.next = next;
+            x.prev = null;
+        }
+
+        if (next == null) {
+            last = prev;
+        } else {
+            next.prev = prev;
+            x.next = null;
+        }
+
+        x.item = null;
+        size--;
+        modCount++;
+        return element;
+    }
+}
+</code></pre>
+<h2 id="ArrayList-是线程安全的么？"><a href="#ArrayList-是线程安全的么？" class="headerlink" title="ArrayList 是线程安全的么？"></a>ArrayList 是线程安全的么？</h2><p>ArrayList 不是线程安全的。</p>
+<h2 id="需要线程安全怎么办？"><a href="#需要线程安全怎么办？" class="headerlink" title="需要线程安全怎么办？"></a>需要线程安全怎么办？</h2><p>使用 Collections.synchronizedList (list)<br>使用 Vector</p>
+<h2 id="如何复制某个-ArrayList-到另一个-ArrayList-中去？"><a href="#如何复制某个-ArrayList-到另一个-ArrayList-中去？" class="headerlink" title="如何复制某个 ArrayList 到另一个 ArrayList 中去？"></a>如何复制某个 ArrayList 到另一个 ArrayList 中去？</h2><p>使用 clone () 方法<br>使用 ArrayList 构造方法<br>使用 addAll 方法</p>
+<h2 id="已知成员变量集合存储-N-多用户名称，在多线程的环境下，使用迭代器在读取集合数据的同时如何保证还可以正常的写入数据到集合？"><a href="#已知成员变量集合存储-N-多用户名称，在多线程的环境下，使用迭代器在读取集合数据的同时如何保证还可以正常的写入数据到集合？" class="headerlink" title="已知成员变量集合存储 N 多用户名称，在多线程的环境下，使用迭代器在读取集合数据的同时如何保证还可以正常的写入数据到集合？"></a>已知成员变量集合存储 N 多用户名称，在多线程的环境下，使用迭代器在读取集合数据的同时如何保证还可以正常的写入数据到集合？</h2><p>使用读写分离集合（CopyOnWriteArrayList ）</p>
+<pre><code class="bash">class CollectionThread implements Runnable{
+    //private static ArrayList&lt;String&gt; list = new ArrayList&lt;String&gt;();
+    private static CopyOnWriteArrayList&lt;String&gt; list = new CopyOnWriteArrayList&lt;String&gt;();
+    static{
+        list.add("Jack");
+        list.add("Lucy");
+        list.add("Jimmy");
+    }
+
+    @Override
+    public void run() {
+        for (String value : list) {
+            System.out.println(value);
+            //在读取数据的同时又向集合写入数据
+            list.add("coco");
+        }
+    }
+}
+</code></pre>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">阿健君</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2020/07/15/collection/ArrayList%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">http://example.com/2020/07/15/collection/ArrayList%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">HJ 的学习录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a><a class="post-meta__tags" href="/tags/ArrayList/">ArrayList</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/collection.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer=""></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="微信扫码"></a><div class="post-qr-code-desc">微信扫码</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="支付宝扫码"></a><div class="post-qr-code-desc">支付宝扫码</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/07/20/collection/LinkedList%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/LinkedList.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">LinkedList 源码分析</div></div></a></div><div class="next-post pull-right"><a href="/2020/07/10/collection/Java%20%E9%9B%86%E5%90%88/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/java2.jpeg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Java 集合</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2020/07/10/collection/Java%20%E9%9B%86%E5%90%88/" title="Java 集合"><img class="cover" src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/java2.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-10</div><div class="title">Java 集合</div></div></a></div><div><a href="/2020/07/20/collection/LinkedList%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="LinkedList 源码分析"><img class="cover" src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/LinkedList.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-20</div><div class="title">LinkedList 源码分析</div></div></a></div><div><a href="/2020/07/26/collection/HashMap1.7%20%E4%B8%8E%201.8%20%E6%BA%90%E7%A0%81%E7%9A%84%E5%8C%BA%E5%88%AB/" title="HashMap1.7 与 1.8 源码的区别"><img class="cover" src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/hashmap.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-26</div><div class="title">HashMap1.7 与 1.8 源码的区别</div></div></a></div></div></div><hr><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div id="comment-switch"><span class="first-comment">Valine</span><span class="switch-btn"></span><span class="second-comment">Disqus</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div><div><div id="disqus_thread"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"></div><div class="author-info__name">阿健君</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>qq:1064821280</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/junian455" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/1064821280@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://junian455.github.io/" target="_blank" title="Blog"><i class="fas fa-rss-square"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">哈喽，有问题的话请在留言板留言，我看到会第一时间回复你。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedList-%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-text">LinkedList 源码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RandomAccess-%E6%A0%87%E8%AE%B0%E6%8E%A5%E5%8F%A3"><span class="toc-text">RandomAccess 标记接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ArrayList-%E6%98%AF%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E4%B9%88%EF%BC%9F"><span class="toc-text">ArrayList 是线程安全的么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9C%80%E8%A6%81%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="toc-text">需要线程安全怎么办？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%A4%8D%E5%88%B6%E6%9F%90%E4%B8%AA-ArrayList-%E5%88%B0%E5%8F%A6%E4%B8%80%E4%B8%AA-ArrayList-%E4%B8%AD%E5%8E%BB%EF%BC%9F"><span class="toc-text">如何复制某个 ArrayList 到另一个 ArrayList 中去？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%B2%E7%9F%A5%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E9%9B%86%E5%90%88%E5%AD%98%E5%82%A8-N-%E5%A4%9A%E7%94%A8%E6%88%B7%E5%90%8D%E7%A7%B0%EF%BC%8C%E5%9C%A8%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%9A%84%E7%8E%AF%E5%A2%83%E4%B8%8B%EF%BC%8C%E4%BD%BF%E7%94%A8%E8%BF%AD%E4%BB%A3%E5%99%A8%E5%9C%A8%E8%AF%BB%E5%8F%96%E9%9B%86%E5%90%88%E6%95%B0%E6%8D%AE%E7%9A%84%E5%90%8C%E6%97%B6%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E8%BF%98%E5%8F%AF%E4%BB%A5%E6%AD%A3%E5%B8%B8%E7%9A%84%E5%86%99%E5%85%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E9%9B%86%E5%90%88%EF%BC%9F"><span class="toc-text">已知成员变量集合存储 N 多用户名称，在多线程的环境下，使用迭代器在读取集合数据的同时如何保证还可以正常的写入数据到集合？</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理"><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/%E7%BA%A2%E9%BB%912%E6%A0%91.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="红黑树原理"></a><div class="content"><a class="title" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理">红黑树原理</a><time datetime="2022-04-16T02:55:00.000Z" title="发表于 2022-04-16 10:55:00">2022-04-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="设计模式-行为型设计模式"></a><div class="content"><a class="title" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式">设计模式-行为型设计模式</a><time datetime="2022-04-02T08:11:00.000Z" title="发表于 2022-04-02 16:11:00">2022-04-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/cache.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="怎么利用Redis实现数据的去重？"></a><div class="content"><a class="title" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？">怎么利用Redis实现数据的去重？</a><time datetime="2022-03-14T06:29:00.000Z" title="发表于 2022-03-14 14:29:00">2022-03-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/seata.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SEATA"></a><div class="content"><a class="title" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA">SEATA</a><time datetime="2022-01-20T07:11:00.000Z" title="发表于 2022-01-20 15:11:00">2022-01-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/traditional.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="分布式事务"></a><div class="content"><a class="title" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务">分布式事务</a><time datetime="2022-01-10T03:11:00.000Z" title="发表于 2022-01-10 11:11:00">2022-01-10</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">©2020 - 2022 By 阿健君</div><div class="footer_custom_text"><span style="margin-top:5px;display:inline-block;font-weight:bold;font-size:14px">一分耕耘，一分收获。</span><p></p> <p><a target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" title="博客框架为Hexo" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://demo.jerryc.me/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" title="主题采用butterfly" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://metroui.org.ua/index.html "><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&amp;logo=jsDelivr" title="本站使用JsDelivr为静态资源提供CDN加速" data-ll-status="loading" class="entered loading"></a> &nbsp;<a target="_blank" href="https://vercel.com/ "><img src="https://img.shields.io/badge/Hosted-Vervel-brightgreen?style=flat&amp;logo=Vercel" title="本站采用双线部署，默认线路托管于Vercel" data-ll-status="loading" class="entered loading"></a>&nbsp;<a class="github-badge" target="_blank" href="https://beian.miit.gov.cn" style="margin-inline:5px" title="本站已在工信部备案，备案号浙ICP备-2022001668号"><img src="http://cdn.ymktchic.top/img/202201212329189.svg" data-lazy-src="" alt="" data-ll-status="loaded" class="entered loaded"></a>&nbsp;<a target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&amp;logo=Claris" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" data-ll-status="loading" class="entered loading"></a> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="95" height="20" role="img" aria-label="CDN:又拍云"><title>CDN:又拍云</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"></stop><stop offset="1" stop-opacity=".1"></stop></linearGradient><clipPath id="r"><rect width="95" height="20" rx="3" fill="#fff"></rect></clipPath><g clip-path="url(#r)"><rect width="52" height="20" fill="#555"></rect><rect x="52" width="43" height="20" fill="#00b6ff"></rect><rect width="95" height="20" fill="url(#s)"></rect></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><image x="5" y="3" width="14" height="14" xlink:href="https://developer.qiniu.com/assets/logo-white-b90d685a6b146884636382426d11b7236f5f7ca1c5dfafdb6fa777a0f976fc1f.png"></image><text aria-hidden="true" x="355" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="250">CDN</text><text x="355" y="140" transform="scale(.1)" fill="#fff" textLength="250">CDN</text><text aria-hidden="true" x="725" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="330">七牛云</text><text x="725" y="140" transform="scale(.1)" fill="#fff" textLength="330">七牛云</text></g></svg></p></div></div><div class="container" id="jsi-flying-fish-container"></div><style>@media only screen and (max-width: 767px){
+  #sidebar_search_box input[type=text]{width:calc(100% - 24px)}
+}</style></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">本地搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script>function loadDisqus () {
+  var disqus_config = function () {
+    this.page.url = 'http://example.com/2020/07/15/collection/ArrayList%20%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/'
+    this.page.identifier = '2020/07/15/collection/ArrayList 源码分析/'
+    this.page.title = 'ArrayList 源码分析'
+  };
+
+  window.disqusReset = () => {
+    DISQUS.reset({
+      reload: true,
+      config: disqus_config
+    })
+  }
+
+  if (window.DISQUS) disqusReset()
+  else {
+    (function() { 
+      var d = document, s = d.createElement('script');
+      s.src = 'https://.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  }
+}
+
+if ('Valine' === 'Disqus' || !true) {
+  if (true) btf.loadComment(document.getElementById('disqus_thread'), loadDisqus)
+  else loadDisqus()
+} else {
+  function loadOtherComment () {
+    loadDisqus()
+  }
+}
+</script></div><script src="/js/card_categor_hide.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script data-pjax="" src="https://cdn.jsdelivr.net/gh/Jnylife/CDN@1.3/js/fish.js"></script><script src="https://cdn.jsdelivr.net/gh/sviptzk/HexoStaticFile@latest/Hexo/js/WithoutLine.min.js"></script><div class="aplayer no-destroy" data-id="60198" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script async="" data-pjax="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

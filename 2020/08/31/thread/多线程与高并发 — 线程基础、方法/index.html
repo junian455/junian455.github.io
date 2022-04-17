@@ -1,0 +1,476 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>多线程与高并发 — 线程基础、方法 | HJ 的学习录</title><meta name="keywords" content="多线程,进程,线程方法"><meta name="author" content="阿健君"><meta name="copyright" content="阿健君"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="进程与线程进程与线程进程 程序由指令和数据组成，但这些指令要运行，数据要读写，就必须将指令加载至 CPU，数据加载至内存。在指令运行过程中还需要用到磁盘、网络等设备。进程就是用来加载指令、管理内存、管理 IO 的。当一个程序被运行，从磁盘加载这个程序的代码至内存，这时就开启了一个进程。进程可以视为程序的一个实例。大部分程序可以同时运行多个实例进程（例如记事本、画图、浏览器 等），也有的程序只能启动">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多线程与高并发 — 线程基础、方法">
+<meta property="og:url" content="http://example.com/2020/08/31/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E3%80%81%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="HJ 的学习录">
+<meta property="og:description" content="进程与线程进程与线程进程 程序由指令和数据组成，但这些指令要运行，数据要读写，就必须将指令加载至 CPU，数据加载至内存。在指令运行过程中还需要用到磁盘、网络等设备。进程就是用来加载指令、管理内存、管理 IO 的。当一个程序被运行，从磁盘加载这个程序的代码至内存，这时就开启了一个进程。进程可以视为程序的一个实例。大部分程序可以同时运行多个实例进程（例如记事本、画图、浏览器 等），也有的程序只能启动">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/thread1.jpg">
+<meta property="article:published_time" content="2020-08-31T00:23:00.000Z">
+<meta property="article:modified_time" content="2020-08-31T00:23:00.000Z">
+<meta property="article:author" content="阿健君">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="进程">
+<meta property="article:tag" content="线程方法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/thread1.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2020/08/31/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E3%80%81%E6%96%B9%E6%B3%95/"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '多线程与高并发 — 线程基础、方法',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: false,
+  postUpdate: '2020-08-31 08:23:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/scollbar.css"><link rel="stylesheet" href="/css/bottomsetting.css"><link rel="stylesheet" href="/css/card_categor_hide.css"><link rel="stylesheet" href="/css/article_bak_transparent.css"><link rel="stylesheet" href="/css/index_tag.css"><link rel="stylesheet" href="/css/index_tag2.css"><link rel="stylesheet" href="/css/modify.css"><link rel="stylesheet" href="/css/index_tag3.css"><meta name="generator" content="Hexo 5.4.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="wizard-scene"><div class="wizard-objects"><div class="wizard-square"></div><div class="wizard-circle"></div><div class="wizard-triangle"></div></div><div class="wizard"><div class="wizard-body"></div><div class="wizard-right-arm"><div class="wizard-right-hand"></div></div><div class="wizard-left-arm"><div class="wizard-left-hand"></div></div><div class="wizard-head"><div class="wizard-beard"></div><div class="wizard-face"><div class="wizard-adds"></div></div><div class="wizard-hat"><div class="wizard-hat-of-the-hat"></div><div class="wizard-four-point-star --first"></div><div class="wizard-four-point-star --second"></div><div class="wizard-four-point-star --third"></div></div></div></div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/gh/junian455/pic@master/img/top_img.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">HJ 的学习录</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">多线程与高并发 — 线程基础、方法</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-08-31T00:23:00.000Z" title="发表于 2020-08-31 08:23:00">2020-08-31</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-08-31T00:23:00.000Z" title="更新于 2020-08-31 08:23:00">2020-08-31</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="多线程与高并发 — 线程基础、方法"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image: url('https://cdn.jsdelivr.net/gh/junian455/pic@master/img/top_img.png');"></div><article class="post-content" id="article-container"><p>进程与线程<br>进程与线程<br>进程</p>
+<p>程序由指令和数据组成，但这些指令要运行，数据要读写，就必须将指令加载至 CPU，数据加载至内存。在指令运行过程中还需要用到磁盘、网络等设备。进程就是用来加载指令、管理内存、管理 IO 的。<br>当一个程序被运行，从磁盘加载这个程序的代码至内存，这时就开启了一个进程。<br>进程可以视为程序的一个实例。大部分程序可以同时运行多个实例进程（例如记事本、画图、浏览器 等），也有的程序只能启动一个实例进程（例如网易云音乐、360 安全卫士等）<br>线程</p>
+<p>一个进程之内可以分为一到多个线程。<br>一个线程就是一个指令流，将指令流中的一条条指令以一定的顺序交给 CPU 执行 。<br>java 中，线程作为最小调度单位，进程作为资源分配的最小单位。 在 windows 中进程是不活动的，只是作为线程的容器。<br>两者对比</p>
+<p>进程基本上相互独立的，而线程存在于进程内，是进程的一个子集。<br>进程拥有共享的资源，如内存空间等，供其内部的线程共享。<br>进程间通信较为复杂，同一台计算机的进程通信称为 IPC（Inter-process communication），不同计算机之间的进程通信，需要通过网络，并遵守共同的协议，例如 HTTP。<br>线程通信相对简单，因为它们共享进程内的内存，多个线程可以访问同一个共享变量。<br>线程更轻量，线程上下文切换成本一般上要比进程上下文切换低。<br>并行与并发<br>并发</p>
+<p>单核 cpu 下，线程实际还是串行执行的。操作系统中有一个组件叫做任务调度器，将 cpu 的时间片（windows 下时间片最小约为 15 毫秒）分给不同的程序使用，只是由于 cpu 在线程间（时间片很短）的切换非常快，人类感、觉是同时运行的 。总结为一句话就是： 微观串行，宏观并行 。</p>
+<p>img<br>并行</p>
+<p>多核 cpu 下，每个核（core） 都可以调度运行线程，这时候线程可以是并行的，不同的线程同时使用不同的 cpu 在执行。</p>
+<p>img<br>二者对比</p>
+<p>引用 Rob Pike 的一段描述：并发（concurrent）是同一时间应对（dealing with）多件事情的能力，并行（parallel）是同一时间动手做（doing）多件事情的能力。</p>
+<p>家庭主妇做饭、打扫卫生、给孩子喂奶，她一个人轮流交替做这多件事，这时就是并发</p>
+<p>雇了 3 个保姆，一个专做饭、一个专打扫卫生、一个专喂奶，互不干扰，这时是并行</p>
+<p>家庭主妇雇了个保姆，她们一起这些事，这时既有并发，也有并行（这时会产生竞争，例如锅只有一口，一 个人用锅时，另一个人就得等待）</p>
+<p>应用<br>同步和异步的概念</p>
+<p>以调用方的角度讲，如果需要等待结果返回才能继续运行的话就是同步，不需要等待就是异步。</p>
+<p>1）设计</p>
+<p>多线程可以使方法的执行变成异步的，比如说读取磁盘文件时，假设读取操作花费了 5 秒，如果没有线程的调度机制，那么 cpu 只能等 5 秒，啥都不能做。</p>
+<p>结论<br>比如在项目中，视频文件需要转换格式等操作比较费时，这时开一个新线程处理视频转换，避免阻塞主线程。</p>
+<p>tomcat 的异步 servlet 也是类似的目的，让用户线程处理耗时较长的操作，避免阻塞 tomcat 的工作线程</p>
+<p>ui 程序中，开线程进行其他操作，避免阻塞 ui 线程</p>
+<p>总结<br>单核 cpu 下，多线程不能实际提高程序运行效率，只是为了能够在不同的任务之间切换，不同线程轮流使用 cpu ，不至于一个线程总占用 cpu，别的线程没法干活。<br>多核 cpu 可以并行跑多个线程，但能否提高程序运行效率还是要分情况的。<br>有些任务，经过精心设计，将任务拆分，并行执行，当然可以提高程序的运行效率，但不是所有计算任 务都能拆分。</p>
+<p>而也不是所有任务都需要拆分，任务的目的如果不同，谈拆分和效率没啥意义。</p>
+<p>IO 操作不占用 cpu，只是我们一般拷贝文件使用的是【阻塞 IO】，这时相当于线程虽然不用 cpu，但需要一 直等待 IO 结束，没能充分利用线程。所以才有后面的【非阻塞 IO】和【异步 IO】优化。<br>CODE<br>1<br>注：以后的代码示例均在添加 @Slf4j 依赖的情况下执行<br>Java 线程<br>创建和运行线程<br>方法一，直接使用 Thread</p>
+<pre><code class="bash">public static void main(String[] args) {
+        // 匿名内部类方式创建 Thread
+        Thread t = new Thread("t1") {
+            @Override
+            public void run() {
+                log.debug("running");
+            }
+        };
+        
+        t.start();
+        log.debug("running");
+    }
+</code></pre>
+<p>方法二，使用 Runnable 配合 Thread（推荐）</p>
+<p>把【线程】和【任务】（要执行的代码）分开，Thread 代表线程，Runnable 可运行的任务（线程要执行的代码）。</p>
+<pre><code class="bash">public static void main(String[] args) {
+        // 使用 lambda 表达式，因为 Runnable 接口 
+        // 标注了 @FunctionalInterface 这个注解，表示是一个函数式接口，可以使用 lambda 表达式
+        Runnable r = () -&gt; log.debug("running");
+        new Thread(r, "t1").start();
+    }
+</code></pre>
+<p>小结</p>
+<p>方法 1 是把线程和任务合并在了一起，方法 2 是把线程和任务分开了。<br>用 Runnable 更容易与线程池等高级 API 配合，用 Runnable 让任务类脱离了 Thread 继承体系，更灵活。<br>通过查看源码可以发现，方法二其实到底还是通过方法一执行的！<br>方法三，FutureTask 配合 Thread</p>
+<p>FutureTask 能够接收 Callable 类型的参数，用来处理有返回结果的情况 ，FutureTask 是 Future 和 Runable 的实现。</p>
+<pre><code class="bash">public static void main(String[] args) throws ExecutionException, InterruptedException {
+    // 实现多线程的第三种方法可以返回数据
+    FutureTask futureTask = new FutureTask&lt;&gt;(new Callable&lt;Integer&gt;() {
+        @Override
+        public Integer call() throws Exception {
+            log.debug("多线程任务");
+            Thread.sleep(100);
+            return 100;
+        }
+    });
+    // 主线程阻塞，同步等待 task 执行完毕的结果
+    new Thread(futureTask,"我的名字").start();
+    log.debug("主线程");
+    log.debug("{}",futureTask.get());
+}
+</code></pre>
+<p>Future 就是对于具体的 Runnable 或者 Callable 任务的执行结果进行取消、查询是否完成、获取结果。必要时可以通过 get 方法获取执行结果，该方法会阻塞直到任务返回结果。</p>
+<pre><code class="bash">public interface Future&lt;V&gt; {
+    boolean cancel(boolean mayInterruptIfRunning);
+    boolean isCancelled();
+    boolean isDone();
+    V get() throws InterruptedException, ExecutionException;
+    V get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException;
+}
+</code></pre>
+<p>Future 提供了三种功能： 　　</p>
+<p>判断任务是否完成； 　　</p>
+<p>能够中断任务； 　　</p>
+<p>能够获取任务执行结果。</p>
+<p>多个线程同时执行</p>
+<p>交替执行<br>谁先谁后，不由我们控制<br>查看进程线程的方法</p>
+<p>windows</p>
+<p>任务管理器可以查看进程和线程数，也可以用来杀死进程。<br>tasklist 查看进程。<br>taskkill 杀死进程。<br>linux</p>
+<p>ps -fe 查看所有进程。<br>ps -fT -p 查看某个进程（PID）的所有线程。<br>kill 杀死进程。<br>top 按大写 H 切换是否显示线程。<br>top -H -p 查看某个进程（PID）的所有线程。<br>java</p>
+<p>jps 命令查看所有 java 进程。<br>jstack 查看某个 java 进程（PID）的所有线程状态。<br>jconsole 来查看某个 java 进程中线程的运行情况（图形界面）。<br>线程运行原理<br>虚拟机栈与栈帧</p>
+<p>虚拟机栈描述的是 java 方法执行的内存模型：每个方法被执行的时候都会同时创建一个栈帧 (stack frame) 用于存储局部变量表、操作数栈、动态链接、方法出口等信息，是属于线程私有的。</p>
+<p>当 java 中使用多线程时，每个线程都会维护它自己的栈帧。<br>每个线程只能有一个活动栈帧，对应着当前正在执行的那个方法。<br>线程上下文切换（Thread Context Switch）</p>
+<p>因为以下一些原因导致 cpu 不再执行当前的线程，转而执行另一个线程的代码：</p>
+<p>线程的 cpu 时间片用完 (每个线程轮流执行，看前面并行的概念)。<br>垃圾回收。<br>有更高优先级的线程需要运行。<br>线程自己调用了 sleep、yield、wait、join、park、synchronized、lock 等方法。<br>当 上下文切换发生时，需要由操作系统保存当前线程的状态，并恢复另一个线程的状态，java 中对应的概念就是程序计数器（Program Counter Register），它的作用是记住下一条 jvm 指令的执行地址，是线程私有的。</p>
+<p>Thread 的常见方法<br>start 与 run<br>调用 start</p>
+<pre><code class="bash">public static void main(String[] args) {
+
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                log.info(Thread.currentThread().getName() + " running....");
+            }
+        }, "t1");
+
+        // 测试通过 Thread 类实例 t1 对象直接调用 run 方法
+        t1.run();
+
+        log.info(Thread.currentThread().getName() + " running...");
+    }
+</code></pre>
+<p>输出：</p>
+<pre><code class="bash">14:56:56 [main] c.Code_05_Test - main running....
+14:56:56 [main] c.Code_05_Test - main running...
+调用 run
+</code></pre>
+<p>将上面代码的 thread.start(); 改为 thread.run(); 输出结果如下：</p>
+<pre><code class="bash">14:59:35 [main] c.Code_05_Test - main running...
+14:59:35 [t1] c.Code_05_Test - t1 running....
+</code></pre>
+<p>通过打印台的输出，发现结果是不一样的，使用 start 方式，CPU 会为创建的线程分配时间片，线程进入运行状态，然后线程调用 run 方法执行逻辑。而直接使用 run 的方式，虽然会创建了线程，但是它是直接调用方法，而不是像 start 方式那样，这个线程对象会处一直处在新建状态，从结果上也可以看出，run 方法是 main 线程调用，而不是 t1 线程。</p>
+<p>小结</p>
+<p>直接调用 run() 是在主线程中执行了 run()，没有启动新的线程。<br>使用 start() 是启动新的线程，通过新的线程间接执行 run() 方法 中的代码。<br>sleep 与 yield<br>sleep</p>
+<p>调用 sleep 会让当前线程从 Running 进入 Timed Waiting 状态（阻塞）。<br>其它线程可以使用 interrupt 方法打断正在睡眠的线程，那么被打断的线程这时就会抛出 InterruptedException 异常【注意：这里打断的是正在休眠的线程，而不是其它状态的线程】。<br>睡眠结束后的线程未必会立刻得到执行 (需要分配到 cpu 时间片)。<br>建议用 TimeUnit 的 sleep() 代替 Thread 的 sleep() 来获得更好的可读性。<br>yield（礼让）</p>
+<p>调用 yield 会让当前线程从 Running 进入 Runnable 就绪状态，然后调度执行其它线程。<br>具体的实现依赖于操作系统的任务调度器。<br>小结</p>
+<p>yield 使 cpu 调用其它线程，但是 cpu 可能会再分配时间片给该线程；而 sleep 需要等过了休眠时间之后才有可能被分配 cpu 时间片。</p>
+<p>线程优先级</p>
+<p>线程优先级会提示（hint）调度器优先调度该线程，但它仅仅是一个提示，调度器可以忽略它。<br>如果 cpu 比较忙，那么优先级高的线程会获得更多的时间片，但 cpu 闲时，优先级几乎没作用。<br>join<br>join 用于等待某个线程结束。哪个线程内调用 join () 方法，就等待哪个线程结束，然后再去执行其他线程。如在主线程中调用 t1.join ()，则是主线程需要等待 t1 线程结束，才能执行其线程。</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>5<br>Thread t1 = new Thread();<br>//等待 t1 线程执行结束<br>t1.join();<br>// 最多等待 1000ms,如果 1000ms 内线程执行完毕，则会直接执行下面的语句，不会等够 1000ms<br>t1.join(1000);<br>为什么需要 join？</p>
+<p>下面的代码执行，打印 r 是什么？</p>
+<pre><code class="bash">static int r = 0;
+public static void main(String[] args) throws InterruptedException {
+     test1();
+}
+private static void test1() throws InterruptedException {
+     log.debug("开始");
+     Thread t1 = new Thread(() -&gt; {
+         log.debug("开始");
+         sleep(1);
+         log.debug("结束");
+         r = 10;
+     });
+     t1.start();
+     log.debug("结果为:{}", r);
+     log.debug("结束");
+}
+</code></pre>
+<p>分析：</p>
+<p>因为主线程和线程 t1 是并行执行的，t1 线程需要 1 秒之后才能算出 r=10。</p>
+<p>而主线程一开始就要打印 r 的结果，所以只能打印出 r=0。</p>
+<p>解决方法：要想打印出 r=10，用 join 加在 t1.start () 之后即可。</p>
+<p>注意：</p>
+<p>需要等待结果返回，才能继续运行就是同步。</p>
+<p>不需要等待结果返回，就能继续运行就是异步。</p>
+<p>interrupt()<br>interrupt 打断线程有两种情况，如下：</p>
+<p>如果一个线程在在运行中被打断，打断标记会被置为 true 。<br>如果是打断的是因 sleep、wait、join 方法而被阻塞的线程，会将打断标记置为 false 。<br>isInterrupted () 与 interrupted () 比较</p>
+<p>首先，isInterrupted 是实例方法，interrupted 是静态方法，它们的用处都是查看当前打断的状态，但是 isInterrupted 方法查看线程的时候，不会将打断标记清空，也就是置为 false，interrupted 查看线程打断状态后，会将打断标志置为 false，也就是清空打断标记。</p>
+<p>以 sleep 为例：</p>
+<pre><code class="bash">private static void test1() throws InterruptedException {
+     Thread t1 = new Thread(()-&gt;{
+         sleep(1);
+     }, "t1");
+     t1.start();
+     
+     sleep(0.5);//t2睡眠0.5s
+     t1.interrupt();
+     log.debug(" 打断状态: {}", t1.isInterrupted());
+}
+</code></pre>
+<p>输出：</p>
+<pre><code class="bash">java.lang.InterruptedException: sleep interrupted
+     at java.lang.Thread.sleep(Native Method)
+     at java.lang.Thread.sleep(Thread.java:340)
+     at java.util.concurrent.TimeUnit.sleep(TimeUnit.java:386)
+     at cn.heu.n2.util.Sleeper.sleep(Sleeper.java:8)
+     at cn.heu.n4.TestInterrupt.lambda$test1$3(TestInterrupt.java:59)
+     at java.lang.Thread.run(Thread.java:745)
+21:18:10.374 [main] TestInterrupt - 打断状态: false
+</code></pre>
+<p>打断正常运行的线程，不会清空打断状态：</p>
+<pre><code class="bash">private static void test2() throws InterruptedException {
+     Thread t2 = new Thread(()-&gt;{
+     while(true) {
+         Thread current = Thread.currentThread();
+         boolean interrupted = current.isInterrupted();
+         if(interrupted) {
+             log.debug(" 打断状态: {}", interrupted);
+             break;
+        }
+     }
+  }, "t2");
+  t2.start();
+  sleep(0.5);//t2睡眠0.5s
+  t2.interrupt();
+}
+</code></pre>
+<p>输出：</p>
+<pre><code class="bash">20:57:37.964 [t2] TestInterrupt - 打断状态: true
+</code></pre>
+<p>注：打断 park 线程，不会清空打断状态。而如果打断标记已经是 true, 则 park 会失效。</p>
+<p>​ 可以使用 Thread.interrupted () 清除打断状态。</p>
+<p>模式之两阶段终止<br>Two Phase Termination，就是考虑在一个线程 T1 中如何优雅地终止另一个线程 T2，这里的优雅指的是给 T2 一个料理后事的机会（如释放锁）。</p>
+<p>如下所示：线程的 isInterrupted() 方法可以取得线程的打断标记，如果线程在睡眠 sleep 期间被打断，打断标记是不会变的，为 false，但是 sleep 期间被打断会抛出异常，我们据此手动设置打断标记为 true；如果是在程序正常运行期间被打断的，那么打断标记就被自动设置为 true。处理好这两种情况那我们就可以放心地来料理后事啦！</p>
+<p>image-20210603153151665<br>代码实现如下：</p>
+<pre><code class="bash">public class Test {
+
+    public static void main(String[] args) throws InterruptedException {
+        TwoParseTermination twoParseTermination = new TwoParseTermination();
+        twoParseTermination.start();
+        Thread.sleep(3500);
+        twoParseTermination.stop();
+    }
+
+}
+
+class TwoParseTermination {
+
+    private Thread monitor;
+
+    // 启动线程
+    public void start() {
+        monitor = new Thread(() -&gt; {
+            while (true) {
+                Thread thread = Thread.currentThread();
+                if(thread.isInterrupted()) { // 调用 isInterrupted 不会清除标记
+                    log.info("料理后事 ...");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(1000);
+                        log.info("执行监控的功能 ...");
+                    } catch (InterruptedException e) {
+                        log.info("设置打断标记 ...");
+                        thread.interrupt();
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, "monitor");
+        monitor.start();
+    }
+
+    // 终止线程
+    public void stop() {
+        monitor.interrupt();
+    }
+}
+</code></pre>
+<p>不推荐的方法<br>还有一些不推荐使用的方法，这些方法已过时，容易破坏同步代码块，造成线程死锁。</p>
+<p>stop：停止线程运行。<br>suspend () ：挂起（暂停）线程运行。<br>resume ()：恢复线程运行。<br>主线程与守护线程<br>默认情况下，Java 进程需要等待所有线程都运行结束，才会结束。有一种特殊的线程叫做守护线程，只要其它非守</p>
+<p>护线程运行结束了，即使守护线程的代码没有执行完，也会强制结束。</p>
+<p>注意</p>
+<p>垃圾回收器线程就是一种守护线程</p>
+<p>Tomcat 中的 Acceptor 和 Poller 线程都是守护线程，所以 Tomcat 接收到 shutdown 命令后，不会等待它们处理完当前请求。</p>
+<p>五种状态<br>五种状态的划分主要是从操作系统的层面进行划分的：</p>
+<p>1583507073055<br>【初始状态】仅是在语言层面创建了线程对象，还未与操作系统线程关联。</p>
+<p>【可运行状态】（就绪状态）指该线程已经被创建（与操作系统线程关联），可以由 CPU 调度执行。</p>
+<p>【运行状态】指获取了 CPU 时间片运行中的状态。</p>
+<p>当 CPU 时间片用完，会从【运行状态】转换至【可运行状态】，会导致线程的上下文切换。<br>【阻塞状态】</p>
+<p>如果调用了阻塞 API，如 BIO 读写文件，这时该线程实际不会用到 CPU，会导致线程上下文切换，进入【阻塞状态】；<br>等 BIO 操作完毕，会由操作系统唤醒阻塞的线程，转换至【可运行状态】。<br>与【可运行状态】的区别是：对【阻塞状态】的线程来说只要它们一直不唤醒，调度器就一直不会考虑调度它们。<br>【终止状态】表示线程已经执行完毕，生命周期已经结束，不会再转换为其它状态。</p>
+<p>六种状态<br>这是从 Java API 层面来描述的，根据 Thread.State 枚举，分为六种状态：</p>
+<p>image-20210630120605408<br>【NEW】： 线程刚被创建，但是还没有调用 start () 方法。</p>
+<p>【RUNNABLE】： 当调用了 start () 方法之后，注意，Java API 层面的 RUNNABLE 状态涵盖了 操作系统 层面的【可运行状态】、【运行状态】和【阻塞状态】（由于 BIO 导致的线程阻塞，在 Java 里无法区分，仍然认为是可运行）。</p>
+<p>【BLOCKED】 ， 【WAITING】 ， 【TIMED_WAITING】 都是 Java API 层面对【阻塞状态】的细分，后面会在状态转换一节</p>
+<p>详述。</p>
+<p>【TERMINATED】 当线程代码运行结束。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">阿健君</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2020/08/31/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E3%80%81%E6%96%B9%E6%B3%95/">http://example.com/2020/08/31/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E3%80%81%E6%96%B9%E6%B3%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">HJ 的学习录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程</a><a class="post-meta__tags" href="/tags/%E8%BF%9B%E7%A8%8B/">进程</a><a class="post-meta__tags" href="/tags/%E7%BA%BF%E7%A8%8B%E6%96%B9%E6%B3%95/">线程方法</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/thread1.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer=""></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="微信扫码"></a><div class="post-qr-code-desc">微信扫码</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="支付宝扫码"></a><div class="post-qr-code-desc">支付宝扫码</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/09/03/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E5%90%8C%E6%AD%A5%E9%94%81/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/synchronized.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">多线程与高并发 — 同步锁</div></div></a></div><div class="next-post pull-right"><a href="/2020/08/26/java/Java8%E6%96%B0%E7%89%B9%E6%80%A7/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/jdk8.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Java8新特性</div></div></a></div></nav><hr><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div id="comment-switch"><span class="first-comment">Valine</span><span class="switch-btn"></span><span class="second-comment">Disqus</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div><div><div id="disqus_thread"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"></div><div class="author-info__name">阿健君</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>qq:1064821280</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/junian455" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/1064821280@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://junian455.github.io/" target="_blank" title="Blog"><i class="fas fa-rss-square"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">哈喽，有问题的话请在留言板留言，我看到会第一时间回复你。</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理"><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/%E7%BA%A2%E9%BB%912%E6%A0%91.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="红黑树原理"></a><div class="content"><a class="title" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理">红黑树原理</a><time datetime="2022-04-16T02:55:00.000Z" title="发表于 2022-04-16 10:55:00">2022-04-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="设计模式-行为型设计模式"></a><div class="content"><a class="title" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式">设计模式-行为型设计模式</a><time datetime="2022-04-02T08:11:00.000Z" title="发表于 2022-04-02 16:11:00">2022-04-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/cache.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="怎么利用Redis实现数据的去重？"></a><div class="content"><a class="title" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？">怎么利用Redis实现数据的去重？</a><time datetime="2022-03-14T06:29:00.000Z" title="发表于 2022-03-14 14:29:00">2022-03-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/seata.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SEATA"></a><div class="content"><a class="title" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA">SEATA</a><time datetime="2022-01-20T07:11:00.000Z" title="发表于 2022-01-20 15:11:00">2022-01-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/traditional.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="分布式事务"></a><div class="content"><a class="title" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务">分布式事务</a><time datetime="2022-01-10T03:11:00.000Z" title="发表于 2022-01-10 11:11:00">2022-01-10</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">©2020 - 2022 By 阿健君</div><div class="footer_custom_text"><span style="margin-top:5px;display:inline-block;font-weight:bold;font-size:14px">一分耕耘，一分收获。</span><p></p> <p><a target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" title="博客框架为Hexo" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://demo.jerryc.me/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" title="主题采用butterfly" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://metroui.org.ua/index.html "><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&amp;logo=jsDelivr" title="本站使用JsDelivr为静态资源提供CDN加速" data-ll-status="loading" class="entered loading"></a> &nbsp;<a target="_blank" href="https://vercel.com/ "><img src="https://img.shields.io/badge/Hosted-Vervel-brightgreen?style=flat&amp;logo=Vercel" title="本站采用双线部署，默认线路托管于Vercel" data-ll-status="loading" class="entered loading"></a>&nbsp;<a class="github-badge" target="_blank" href="https://beian.miit.gov.cn" style="margin-inline:5px" title="本站已在工信部备案，备案号浙ICP备-2022001668号"><img src="http://cdn.ymktchic.top/img/202201212329189.svg" data-lazy-src="" alt="" data-ll-status="loaded" class="entered loaded"></a>&nbsp;<a target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&amp;logo=Claris" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" data-ll-status="loading" class="entered loading"></a> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="95" height="20" role="img" aria-label="CDN:又拍云"><title>CDN:又拍云</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"></stop><stop offset="1" stop-opacity=".1"></stop></linearGradient><clipPath id="r"><rect width="95" height="20" rx="3" fill="#fff"></rect></clipPath><g clip-path="url(#r)"><rect width="52" height="20" fill="#555"></rect><rect x="52" width="43" height="20" fill="#00b6ff"></rect><rect width="95" height="20" fill="url(#s)"></rect></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><image x="5" y="3" width="14" height="14" xlink:href="https://developer.qiniu.com/assets/logo-white-b90d685a6b146884636382426d11b7236f5f7ca1c5dfafdb6fa777a0f976fc1f.png"></image><text aria-hidden="true" x="355" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="250">CDN</text><text x="355" y="140" transform="scale(.1)" fill="#fff" textLength="250">CDN</text><text aria-hidden="true" x="725" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="330">七牛云</text><text x="725" y="140" transform="scale(.1)" fill="#fff" textLength="330">七牛云</text></g></svg></p></div></div><div class="container" id="jsi-flying-fish-container"></div><style>@media only screen and (max-width: 767px){
+  #sidebar_search_box input[type=text]{width:calc(100% - 24px)}
+}</style></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="chat_btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">本地搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script>function loadDisqus () {
+  var disqus_config = function () {
+    this.page.url = 'http://example.com/2020/08/31/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E3%80%81%E6%96%B9%E6%B3%95/'
+    this.page.identifier = '2020/08/31/thread/多线程与高并发 — 线程基础、方法/'
+    this.page.title = '多线程与高并发 — 线程基础、方法'
+  };
+
+  window.disqusReset = () => {
+    DISQUS.reset({
+      reload: true,
+      config: disqus_config
+    })
+  }
+
+  if (window.DISQUS) disqusReset()
+  else {
+    (function() { 
+      var d = document, s = d.createElement('script');
+      s.src = 'https://.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  }
+}
+
+if ('Valine' === 'Disqus' || !true) {
+  if (true) btf.loadComment(document.getElementById('disqus_thread'), loadDisqus)
+  else loadDisqus()
+} else {
+  function loadOtherComment () {
+    loadDisqus()
+  }
+}
+</script></div><script src="/js/card_categor_hide.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script data-pjax="" src="https://cdn.jsdelivr.net/gh/Jnylife/CDN@1.3/js/fish.js"></script><script src="https://cdn.jsdelivr.net/gh/sviptzk/HexoStaticFile@latest/Hexo/js/WithoutLine.min.js"></script><div class="aplayer no-destroy" data-id="60198" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script async="" data-pjax="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

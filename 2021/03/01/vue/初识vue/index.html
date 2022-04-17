@@ -1,0 +1,448 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>初识vue | HJ 的学习录</title><meta name="keywords" content="Vue,数据代理"><meta name="author" content="阿健君"><meta name="copyright" content="阿健君"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="初识Vue 想让Vue工作，就必须创建一个Vue实例，且要传入一个配置对象； root容器里的代码依然符合html规范，只不过混入了一些特殊的Vue语法； root容器里的代码被称为【Vue模板】； Vue实例和容器是一一对应的,Vue实例会解析Vue模板，把解析后的结果输出。 真实开发中只有一个Vue实例，并且会配合着组件一起使用； 中的xxx要写js表达式，且xxx可以自动读取到data中的所">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识vue">
+<meta property="og:url" content="http://example.com/2021/03/01/vue/%E5%88%9D%E8%AF%86vue/index.html">
+<meta property="og:site_name" content="HJ 的学习录">
+<meta property="og:description" content="初识Vue 想让Vue工作，就必须创建一个Vue实例，且要传入一个配置对象； root容器里的代码依然符合html规范，只不过混入了一些特殊的Vue语法； root容器里的代码被称为【Vue模板】； Vue实例和容器是一一对应的,Vue实例会解析Vue模板，把解析后的结果输出。 真实开发中只有一个Vue实例，并且会配合着组件一起使用； 中的xxx要写js表达式，且xxx可以自动读取到data中的所">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue.jpg">
+<meta property="article:published_time" content="2021-03-01T07:20:00.000Z">
+<meta property="article:modified_time" content="2021-03-01T07:22:00.000Z">
+<meta property="article:author" content="阿健君">
+<meta property="article:tag" content="Vue">
+<meta property="article:tag" content="数据代理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/03/01/vue/%E5%88%9D%E8%AF%86vue/"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '初识vue',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2021-03-01 15:22:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/scollbar.css"><link rel="stylesheet" href="/css/bottomsetting.css"><link rel="stylesheet" href="/css/card_categor_hide.css"><link rel="stylesheet" href="/css/article_bak_transparent.css"><link rel="stylesheet" href="/css/index_tag.css"><link rel="stylesheet" href="/css/index_tag2.css"><link rel="stylesheet" href="/css/modify.css"><link rel="stylesheet" href="/css/index_tag3.css"><meta name="generator" content="Hexo 5.4.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="wizard-scene"><div class="wizard-objects"><div class="wizard-square"></div><div class="wizard-circle"></div><div class="wizard-triangle"></div></div><div class="wizard"><div class="wizard-body"></div><div class="wizard-right-arm"><div class="wizard-right-hand"></div></div><div class="wizard-left-arm"><div class="wizard-left-hand"></div></div><div class="wizard-head"><div class="wizard-beard"></div><div class="wizard-face"><div class="wizard-adds"></div></div><div class="wizard-hat"><div class="wizard-hat-of-the-hat"></div><div class="wizard-four-point-star --first"></div><div class="wizard-four-point-star --second"></div><div class="wizard-four-point-star --third"></div></div></div></div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/gh/junian455/pic@master/img/top_img.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">HJ 的学习录</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">初识vue</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-03-01T07:20:00.000Z" title="发表于 2021-03-01 15:20:00">2021-03-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-03-01T07:22:00.000Z" title="更新于 2021-03-01 15:22:00">2021-03-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Vue/">Vue</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="初识vue"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image: url('https://cdn.jsdelivr.net/gh/junian455/pic@master/img/top_img.png');"></div><article class="post-content" id="article-container"><h1 id="初识Vue"><a href="#初识Vue" class="headerlink" title="初识Vue"></a>初识Vue</h1><ol>
+<li>想让Vue工作，就必须创建一个Vue实例，且要传入一个配置对象；</li>
+<li>root容器里的代码依然符合html规范，只不过混入了一些特殊的Vue语法；</li>
+<li>root容器里的代码被称为<strong>【Vue模板】</strong>；</li>
+<li>Vue实例和容器是一一对应的,Vue实例会解析Vue模板，把解析后的结果输出。</li>
+<li>真实开发中只有一个Vue实例，并且会配合着组件一起使用；</li>
+<li>中的xxx要写js表达式，且xxx可以自动读取到data中的所有属性；</li>
+<li>一旦data中的数据发生改变，那么页面中用到该数据的地方也会自动更新；<br>​<br>注意区分：js表达式 和 js代码(语句)</li>
+</ol>
+<blockquote>
+<p>表达式：一个表达式会产生一个值，可以放在任何一个需要值的地方：</p>
+</blockquote>
+<p>(1). a(2). a+b (3). demo(1)(4). x === y ? ‘a’ : ‘b’</p>
+<blockquote>
+<p>js代码(语句)</p>
+</blockquote>
+<p>(1). if(){} (2). for(){}</p>
+<p>​</p>
+<pre><code class="bash">&lt;div id="demo"&gt;
+    &lt;h1&gt;Hello，{{name.toUpperCase()}}，{{address}}&lt;/h1&gt;
+&lt;/div&gt;
+&lt;script type="text/javascript" &gt;
+    Vue.config.productionTip = false //阻止 vue 在启动时生成生产提示。
+
+    //创建Vue实例
+    new Vue({
+        el:'#demo', //el用于指定当前Vue实例为哪个容器服务，值通常为css选择器字符串。
+        data:{ //data中用于存储数据，数据供el所指定的容器去使用，值我们暂时先写成一个对象。
+            name:'jny',
+            address:'昆明'
+        }
+    })
+&lt;/script&gt;
+</code></pre>
+<h1 id="模板语法"><a href="#模板语法" class="headerlink" title="模板语法"></a>模板语法</h1><p>​ Vue模板语法有2大类：</p>
+<p>​1. 插值语法：</p>
+<p>​ - 功能：用于解析标签体内容。</p>
+<p>​ - 写法：，xxx是js表达式，且可以直接读取到data中的所有属性。</p>
+<p>​ 2. 指令语法：</p>
+<p>​ - 功能：用于解析标签（包括：标签属性、标签体内容、绑定事件…..）。</p>
+<p>​ - 举例：v-bind:href=”xxx” 或 简写为 :href=”xxx”，xxx同样要写js表达式，</p>
+<p>​ 且可以直接读取到data中的所有属性。</p>
+<pre><code class="bash">&lt;div id="root"&gt;
+       &lt;h2&gt;hello,{{name}}&lt;/h2&gt;
+     &lt;a v-bind:href="blog.url"&gt;点去我的博客&lt;/a&gt;
+         &lt;a  :href="blog.url"&gt;点去{{blog.name}}&lt;/a&gt;
+   &lt;/div&gt;
+   
+       &lt;script&gt;
+           Vue.config.productionTip= false//设置为 false 以阻止 vue 在启动时生成生产提示。
+           
+           //创建Vue实例
+          new Vue({
+               el:'#root',//用于指定当年Vue实例为哪个容器服务，值通常为CSS选择器字符串。
+               data:{//data中用于存储数据，数据供el所指定的容器使用，值暂时写成对象
+                   name: 'jny',
+                  blog:{
+                     url:'https://jnylife.com',
+                    name:'jnylife'
+               }
+                 
+               }
+           })
+       &lt;/script&gt;
+</code></pre>
+<h1 id="数据绑定"><a href="#数据绑定" class="headerlink" title="数据绑定"></a>数据绑定</h1><h2 id="v-bind完成的是单向绑定。"><a href="#v-bind完成的是单向绑定。" class="headerlink" title="v-bind完成的是单向绑定。"></a>v-bind完成的是单向绑定。</h2><p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112132055961.png"></p>
+<p>当我修改<strong>blog:jnylife1</strong>时：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112132057460.png"></p>
+<p>输入框内容也随之改变</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112132058418.png"></p>
+<p>反之，当我修改输入框的内容时，<strong>blog：jnylife1</strong>的值依然不变，这是一个单向绑定，数据只能从data流向页面。</p>
+<h1 id="v-model完成的是双向绑定。"><a href="#v-model完成的是双向绑定。" class="headerlink" title="v-model完成的是双向绑定。"></a>v-model完成的是双向绑定。</h1><pre><code class="bash">双向数据绑定：&lt;input type="text" name=""  v-model:value="blog"&gt;
+</code></pre>
+<p>当我修改<strong>blog:jnylife123</strong>时：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112132106992.gif"></p>
+<p>数据不仅能从data流向页面，还可以从页面流向data。</p>
+<blockquote>
+<ol>
+<li>双向绑定一般都应用在表单类元素上（如：input、select等）</li>
+<li>v-model:value 可以简写为 v-model，因为v-model默认收集的就是value值。</li>
+</ol>
+</blockquote>
+<p>简写：</p>
+<pre><code class="bash">&lt;div id="root"&gt;
+    单向数据绑定：&lt;input type="text" name=""  :value="blog"&gt;&lt;br/&gt;
+    双向数据绑定：&lt;input type="text" name=""  v-model="blog"&gt;&lt;/div&gt;
+</code></pre>
+<h1 id="el的两种写法"><a href="#el的两种写法" class="headerlink" title="el的两种写法"></a>el的两种写法</h1><ol>
+<li><p>new Vue时候配置el属性。</p>
+</li>
+<li><p>先创建Vue实例，随后再通过vm.$mount(‘#root’)指定el的值。</p>
+</li>
+</ol>
+<pre><code class="bash"> const v = new Vue({
+    //el:'#root', //第一种写法
+    data:{
+        name:'尚硅谷'
+    }
+})
+console.log(v)
+v.$mount('#root') //第二种写法，mount挂载。
+</code></pre>
+<h1 id="data的两种写法"><a href="#data的两种写法" class="headerlink" title="data的两种写法"></a>data的两种写法</h1><ul>
+<li>对象式</li>
+<li>函数式</li>
+</ul>
+<p>在data对象里写方法可以将data:function(){}简写为data(){}</p>
+<p>如何选择：目前哪种写法都可以，以后学习到组件时，data必须使用函数式，否则会报错。</p>
+<pre><code>new Vue({
+    el:'#root',
+    //data的第一种写法：对象式
+    /* data:{
+        name:'尚硅谷'
+    } */
+
+    //data的第二种写法：函数式
+    data(){
+        console.log('@@@',this) //此处的this是Vue实例对象
+        return{
+            name:'aaa'
+        }
+    }
+})
+</code></pre>
+<blockquote>
+<p>一个重要的原则：由Vue管理的函数，一定不要写箭头函数，一旦写了箭头函数，this就不再是Vue实例了。</p>
+</blockquote>
+<h1 id="MVVM模型"><a href="#MVVM模型" class="headerlink" title="MVVM模型"></a>MVVM模型</h1><ol>
+<li>M：模型(Model) ：对应data 中的数据</li>
+<li>V：视图(View) ：模板</li>
+<li>VM：视图模型(ViewModel) ： Vue 实例对象</li>
+</ol>
+<p>双向数据绑定，data对象通过数据绑定，将bue模板解析，vue实例对象监听view的DOM并将值返回给MODEL</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112141120961.png"></p>
+<p>观察发现：</p>
+<ol>
+<li><p>data中所有的属性，最后都出现在了vm身上。</p>
+</li>
+<li><p>vm身上所有的属性 及 Vue原型上所有属性，在Vue模板中都可以直接使用。</p>
+</li>
+</ol>
+<pre><code>&lt;div id="root"&gt;
+    &lt;h1&gt;测试一下1：{{1+1}}&lt;/h1&gt;
+    &lt;h1&gt;测试一下2：{{$options}}&lt;/h1&gt;
+    &lt;h1&gt;测试一下3：{{$emit}}&lt;/h1&gt;
+    &lt;h1&gt;测试一下4：{{_c}}&lt;/h1&gt;
+&lt;/div&gt;
+</code></pre>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112141055289.png"></p>
+<h1 id="MVVM和MVC有什么区别"><a href="#MVVM和MVC有什么区别" class="headerlink" title="MVVM和MVC有什么区别"></a>MVVM和MVC有什么区别</h1><blockquote>
+<p>MVVM与MVC的区别有：1、mvvm各部分的通信是双向的，而mvc各部分通信是单向的；2、mvvm是真正将页面与数据逻辑分离放到js里去实现，而mvc里面未分离。</p>
+</blockquote>
+<ul>
+<li>MVC</li>
+</ul>
+<p>MVC是包括view视图层、controller控制层、model数据层。各部分之间的通信都是单向的。</p>
+<p>View 传送指令到 ControllerController 完成业务逻辑后，要求 Model 改变状态Model 将新的数据发送到 View，用户得到反馈</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112141102010.jpeg"></p>
+<ul>
+<li>MVVM</li>
+</ul>
+<p>MVVM包括view视图层、model数据层、viewmodel层。各部分通信都是双向的。采用双向数据绑定，View的变动，自动反映在 ViewModel，反之亦然。其中ViewModel层，就是View和Model层的粘合剂，他是一个放置用户输入验证逻辑，视图显示逻辑，发起网络请求和其他各种各样的代码的极好的地方。说白了，就是把原来ViewController层的业务逻辑和页面逻辑等剥离出来放到ViewModel层</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112141102444.jpeg"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><blockquote>
+<p>在MVC里，View是可以直接访问Model的，所以View里会包含Model信息以及一些业务逻辑。 MVC模型关注的是Model的不变，所以在MVC模型里，Model不依赖于View，但是 View是依赖于Model的。不仅如此，因为有一些业务逻辑在View里实现了，导致要更改View也是比较困难的，至少那些业务逻辑是无法重用的。</p>
+</blockquote>
+<blockquote>
+<p>MVVM在概念上是真正将页面与数据逻辑分离的模式，它把数据绑定工作放到一个JS里去实现，而这个JS文件的主要功能是完成数据的绑定，即把model绑定到UI的元素上。此外MVVM另一个重要特性双向绑定，它更方便你去同时维护页面上都依赖于某个字段的N个区域，而不用手动更新它们。</p>
+</blockquote>
+<h1 id="Object-defineProperty"><a href="#Object-defineProperty" class="headerlink" title="Object.defineProperty"></a>Object.defineProperty</h1><p>使用Object.defineProperty方法给person对象添加属性。</p>
+<pre><code> let person={
+     name:"小王",
+     height:"175",
+  
+ }
+Object.defineProperty(person,'age',{
+     value:18
+
+ })
+ console.log(person)
+</code></pre>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112141141351.png"></p>
+<p>age颜色是淡的，用<font color="red">for(keys in person){console.log(person[keys])}</font>遍历一下看看。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112141143676.png"></p>
+<p>age属性不在里面。</p>
+<p>也可以用<font color="red">console.log(Object.keys(person))</font>遍历一下里面的属性。</p>
+<p>age属性依然不在里面。</p>
+<p>添加enumerable：true属性即可被遍历到。</p>
+<pre><code class="bash">          let number = 18
+Object.defineProperty(person,'age',{
+            value:18,
+            enumerable:true,//默认为false，调为true，意为可枚举的。
+               writeable:true,//可以被修改的，通过Object.defineProperty定义的键值是不能被修改的，默认false。        
+           configurable:true ,//控制属性是否可以被删除，默认值是false
+               //当有人读取person的age属性时，get函数(getter)就会被调用，且返回值就是age的值
+            get(){
+                    console.log('有人读取age属性了')
+                    return number
+                },
+           //当有人修改person的age属性时，set函数(setter)就会被调用，且会收到修改的具体值
+            set(value){
+                    console.log('有人修改了age属性，且值是',value)
+                    number = value
+                }
+        })
+</code></pre>
+<h1 id="Vue中的数据代理"><a href="#Vue中的数据代理" class="headerlink" title="Vue中的数据代理"></a>Vue中的数据代理</h1><h2 id="数据代理"><a href="#数据代理" class="headerlink" title="数据代理"></a>数据代理</h2><p><strong>数据代理</strong>：通过一个对象代理对另一个对象中属性的操作（读/写），此处我通过obj2代理obj的x属性，我只需要修改obj2的x值，就能够改变obj的x值</p>
+<pre><code class="bash">&lt;script&gt;
+   let obj={x:100}
+   let obj2={y:200}
+  
+   Object.defineProperty(obj2,'x',{
+    get(){
+        return obj.x
+    },
+    set(value){
+        obj.x=value
+    }
+   })
+   console.log(obj2)
+&lt;/script&gt;
+</code></pre>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112141352905.png"></p>
+<h1 id="Vue中的数据代理-1"><a href="#Vue中的数据代理-1" class="headerlink" title="Vue中的数据代理"></a>Vue中的数据代理</h1><ol>
+<li>Vue中的数据代理：通过vm对象来代理data对象中属性的操作（读/写）</li>
+<li>Vue中数据代理的好处：更加方便的操作data中的数据</li>
+</ol>
+<h2 id="基本原理："><a href="#基本原理：" class="headerlink" title="基本原理："></a>基本原理：</h2><p>​ - 通过Object.defineProperty()把data对象中所有属性添加到vm上。</p>
+<p>​ - 为每一个添加到vm上的属性，都指定一个getter/setter。</p>
+<p>​ - 在getter/setter内部去操作（读/写）data中对应的属性。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jnylife/ImgHosting/img/202112141441804.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">阿健君</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2021/03/01/vue/%E5%88%9D%E8%AF%86vue/">http://example.com/2021/03/01/vue/%E5%88%9D%E8%AF%86vue/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">HJ 的学习录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Vue/">Vue</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E4%BB%A3%E7%90%86/">数据代理</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer=""></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="微信扫码"></a><div class="post-qr-code-desc">微信扫码</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="支付宝扫码"></a><div class="post-qr-code-desc">支付宝扫码</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/03/04/vue/vue%E6%A0%B7%E5%BC%8F%E7%BB%91%E5%AE%9A/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">vue样式绑定</div></div></a></div><div class="next-post pull-right"><a href="/2021/02/20/java/JDK11%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/jdk8.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">JDK11新特性概览</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/03/11/vue/vue%E7%9A%84%E4%BA%8B%E4%BB%B6%E7%9B%91%E5%90%AC/" title="vue的事件监听"><img class="cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-11</div><div class="title">vue的事件监听</div></div></a></div><div><a href="/2021/04/05/vue/vue%E6%8F%92%E6%A7%BD/" title="vue插槽"><img class="cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue插槽.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-05</div><div class="title">vue插槽</div></div></a></div><div><a href="/2021/03/04/vue/vue%E6%A0%B7%E5%BC%8F%E7%BB%91%E5%AE%9A/" title="vue样式绑定"><img class="cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-04</div><div class="title">vue样式绑定</div></div></a></div><div><a href="/2021/03/26/vue/vue%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/" title="vue生命周期"><img class="cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-26</div><div class="title">vue生命周期</div></div></a></div><div><a href="/2021/03/30/vue/vue%E7%BB%84%E4%BB%B6/" title="vue组件"><img class="cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue组件.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-30</div><div class="title">vue组件</div></div></a></div><div><a href="/2021/03/30/vue/vue%E8%84%9A%E6%89%8B%E6%9E%B6/" title="vue脚手架"><img class="cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/vue-cli.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-30</div><div class="title">vue脚手架</div></div></a></div></div></div><hr><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div id="comment-switch"><span class="first-comment">Valine</span><span class="switch-btn"></span><span class="second-comment">Disqus</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div><div><div id="disqus_thread"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"></div><div class="author-info__name">阿健君</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>qq:1064821280</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/junian455" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/1064821280@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://junian455.github.io/" target="_blank" title="Blog"><i class="fas fa-rss-square"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">哈喽，有问题的话请在留言板留言，我看到会第一时间回复你。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%9D%E8%AF%86Vue"><span class="toc-text">初识Vue</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95"><span class="toc-text">模板语法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%91%E5%AE%9A"><span class="toc-text">数据绑定</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#v-bind%E5%AE%8C%E6%88%90%E7%9A%84%E6%98%AF%E5%8D%95%E5%90%91%E7%BB%91%E5%AE%9A%E3%80%82"><span class="toc-text">v-bind完成的是单向绑定。</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#v-model%E5%AE%8C%E6%88%90%E7%9A%84%E6%98%AF%E5%8F%8C%E5%90%91%E7%BB%91%E5%AE%9A%E3%80%82"><span class="toc-text">v-model完成的是双向绑定。</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#el%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%86%99%E6%B3%95"><span class="toc-text">el的两种写法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#data%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%86%99%E6%B3%95"><span class="toc-text">data的两种写法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#MVVM%E6%A8%A1%E5%9E%8B"><span class="toc-text">MVVM模型</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#MVVM%E5%92%8CMVC%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="toc-text">MVVM和MVC有什么区别</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Object-defineProperty"><span class="toc-text">Object.defineProperty</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Vue%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E4%BB%A3%E7%90%86"><span class="toc-text">Vue中的数据代理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%BB%A3%E7%90%86"><span class="toc-text">数据代理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Vue%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E4%BB%A3%E7%90%86-1"><span class="toc-text">Vue中的数据代理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86%EF%BC%9A"><span class="toc-text">基本原理：</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理"><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/%E7%BA%A2%E9%BB%912%E6%A0%91.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="红黑树原理"></a><div class="content"><a class="title" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理">红黑树原理</a><time datetime="2022-04-16T02:55:00.000Z" title="发表于 2022-04-16 10:55:00">2022-04-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="设计模式-行为型设计模式"></a><div class="content"><a class="title" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式">设计模式-行为型设计模式</a><time datetime="2022-04-02T08:11:00.000Z" title="发表于 2022-04-02 16:11:00">2022-04-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/cache.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="怎么利用Redis实现数据的去重？"></a><div class="content"><a class="title" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？">怎么利用Redis实现数据的去重？</a><time datetime="2022-03-14T06:29:00.000Z" title="发表于 2022-03-14 14:29:00">2022-03-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/seata.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SEATA"></a><div class="content"><a class="title" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA">SEATA</a><time datetime="2022-01-20T07:11:00.000Z" title="发表于 2022-01-20 15:11:00">2022-01-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/traditional.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="分布式事务"></a><div class="content"><a class="title" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务">分布式事务</a><time datetime="2022-01-10T03:11:00.000Z" title="发表于 2022-01-10 11:11:00">2022-01-10</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">©2020 - 2022 By 阿健君</div><div class="footer_custom_text"><span style="margin-top:5px;display:inline-block;font-weight:bold;font-size:14px">一分耕耘，一分收获。</span><p></p> <p><a target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" title="博客框架为Hexo" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://demo.jerryc.me/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" title="主题采用butterfly" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://metroui.org.ua/index.html "><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&amp;logo=jsDelivr" title="本站使用JsDelivr为静态资源提供CDN加速" data-ll-status="loading" class="entered loading"></a> &nbsp;<a target="_blank" href="https://vercel.com/ "><img src="https://img.shields.io/badge/Hosted-Vervel-brightgreen?style=flat&amp;logo=Vercel" title="本站采用双线部署，默认线路托管于Vercel" data-ll-status="loading" class="entered loading"></a>&nbsp;<a class="github-badge" target="_blank" href="https://beian.miit.gov.cn" style="margin-inline:5px" title="本站已在工信部备案，备案号浙ICP备-2022001668号"><img src="http://cdn.ymktchic.top/img/202201212329189.svg" data-lazy-src="" alt="" data-ll-status="loaded" class="entered loaded"></a>&nbsp;<a target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&amp;logo=Claris" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" data-ll-status="loading" class="entered loading"></a> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="95" height="20" role="img" aria-label="CDN:又拍云"><title>CDN:又拍云</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"></stop><stop offset="1" stop-opacity=".1"></stop></linearGradient><clipPath id="r"><rect width="95" height="20" rx="3" fill="#fff"></rect></clipPath><g clip-path="url(#r)"><rect width="52" height="20" fill="#555"></rect><rect x="52" width="43" height="20" fill="#00b6ff"></rect><rect width="95" height="20" fill="url(#s)"></rect></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><image x="5" y="3" width="14" height="14" xlink:href="https://developer.qiniu.com/assets/logo-white-b90d685a6b146884636382426d11b7236f5f7ca1c5dfafdb6fa777a0f976fc1f.png"></image><text aria-hidden="true" x="355" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="250">CDN</text><text x="355" y="140" transform="scale(.1)" fill="#fff" textLength="250">CDN</text><text aria-hidden="true" x="725" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="330">七牛云</text><text x="725" y="140" transform="scale(.1)" fill="#fff" textLength="330">七牛云</text></g></svg></p></div></div><div class="container" id="jsi-flying-fish-container"></div><style>@media only screen and (max-width: 767px){
+  #sidebar_search_box input[type=text]{width:calc(100% - 24px)}
+}</style></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">本地搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script>function loadDisqus () {
+  var disqus_config = function () {
+    this.page.url = 'http://example.com/2021/03/01/vue/%E5%88%9D%E8%AF%86vue/'
+    this.page.identifier = '2021/03/01/vue/初识vue/'
+    this.page.title = '初识vue'
+  };
+
+  window.disqusReset = () => {
+    DISQUS.reset({
+      reload: true,
+      config: disqus_config
+    })
+  }
+
+  if (window.DISQUS) disqusReset()
+  else {
+    (function() { 
+      var d = document, s = d.createElement('script');
+      s.src = 'https://.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  }
+}
+
+if ('Valine' === 'Disqus' || !true) {
+  if (true) btf.loadComment(document.getElementById('disqus_thread'), loadDisqus)
+  else loadDisqus()
+} else {
+  function loadOtherComment () {
+    loadDisqus()
+  }
+}
+</script></div><script src="/js/card_categor_hide.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script data-pjax="" src="https://cdn.jsdelivr.net/gh/Jnylife/CDN@1.3/js/fish.js"></script><script src="https://cdn.jsdelivr.net/gh/sviptzk/HexoStaticFile@latest/Hexo/js/WithoutLine.min.js"></script><div class="aplayer no-destroy" data-id="60198" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script async="" data-pjax="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

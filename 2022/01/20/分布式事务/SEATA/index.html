@@ -1,0 +1,706 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>SEATA | HJ 的学习录</title><meta name="keywords" content="分布式事务,SEATA"><meta name="author" content="阿健君"><meta name="copyright" content="阿健君"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="What is seata？Seata是一款开源的分布式事务解决方案，致力于在微服务架构下提供高性能和简单易用的分布式事务服务； Seata为用户提供了AT、TCC、SAGA和XA事务模式，为用户打造一站式的分布式解决方案； 四种事务模式中，XA模式正在开发中…，其他事务模式已经实现；  目前使用的流行度情况是：AT > TCC > Saga；  我们可以参看seata各公司使用列表： 大部分公司">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SEATA">
+<meta property="og:url" content="http://example.com/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/index.html">
+<meta property="og:site_name" content="HJ 的学习录">
+<meta property="og:description" content="What is seata？Seata是一款开源的分布式事务解决方案，致力于在微服务架构下提供高性能和简单易用的分布式事务服务； Seata为用户提供了AT、TCC、SAGA和XA事务模式，为用户打造一站式的分布式解决方案； 四种事务模式中，XA模式正在开发中…，其他事务模式已经实现；  目前使用的流行度情况是：AT > TCC > Saga；  我们可以参看seata各公司使用列表： 大部分公司">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/seata.jpeg">
+<meta property="article:published_time" content="2022-01-20T07:11:00.000Z">
+<meta property="article:modified_time" content="2022-01-20T07:11:00.000Z">
+<meta property="article:author" content="阿健君">
+<meta property="article:tag" content="分布式事务">
+<meta property="article:tag" content="SEATA">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/seata.jpeg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'SEATA',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2022-01-20 15:11:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/scollbar.css"><link rel="stylesheet" href="/css/bottomsetting.css"><link rel="stylesheet" href="/css/card_categor_hide.css"><link rel="stylesheet" href="/css/article_bak_transparent.css"><link rel="stylesheet" href="/css/index_tag.css"><link rel="stylesheet" href="/css/index_tag2.css"><link rel="stylesheet" href="/css/modify.css"><link rel="stylesheet" href="/css/index_tag3.css"><meta name="generator" content="Hexo 5.4.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="wizard-scene"><div class="wizard-objects"><div class="wizard-square"></div><div class="wizard-circle"></div><div class="wizard-triangle"></div></div><div class="wizard"><div class="wizard-body"></div><div class="wizard-right-arm"><div class="wizard-right-hand"></div></div><div class="wizard-left-arm"><div class="wizard-left-hand"></div></div><div class="wizard-head"><div class="wizard-beard"></div><div class="wizard-face"><div class="wizard-adds"></div></div><div class="wizard-hat"><div class="wizard-hat-of-the-hat"></div><div class="wizard-four-point-star --first"></div><div class="wizard-four-point-star --second"></div><div class="wizard-four-point-star --third"></div></div></div></div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/gh/junian455/pic@master/img/top_img.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">HJ 的学习录</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">SEATA</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-01-20T07:11:00.000Z" title="发表于 2022-01-20 15:11:00">2022-01-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-01-20T07:11:00.000Z" title="更新于 2022-01-20 15:11:00">2022-01-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/">分布式事务</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="SEATA"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image: url('https://cdn.jsdelivr.net/gh/junian455/pic@master/img/top_img.png');"></div><article class="post-content" id="article-container"><h1 id="What-is-seata？"><a href="#What-is-seata？" class="headerlink" title="What is seata？"></a>What is seata？</h1><p><strong>Seata</strong>是一款开源的分布式事务解决方案，致力于在微服务架构下提供高性能和简单易用的<strong>分布式事务服务</strong>；</p>
+<p>Seata为用户提供了<strong>AT、TCC、SAGA和XA</strong>事务模式，为用户打造一站式的分布式解决方案；</p>
+<p>四种事务模式中，XA模式正在开发中…，其他事务模式已经实现；</p>
+<blockquote>
+<p>目前使用的流行度情况是：<code>AT &gt; TCC &gt; Saga；</code></p>
+</blockquote>
+<p>我们可以参看seata各公司使用列表：</p>
+<p>大部分公司都采用的AT事务模式；<a target="_blank" rel="noopener" href="https://github.com/seata/seata/issues/1246"></a></p>
+<p>Seata已经在国内很多团队开始落地，其中不乏有大公司；</p>
+<ul>
+<li>Github：<a target="_blank" rel="noopener" href="https://github.com/seata/seata">https://github.com/seata/seata</a></li>
+<li>官网：<a target="_blank" rel="noopener" href="http://seata.io/">http://seata.io/</a> </li>
+<li>当前最新版本：1.3.0</li>
+</ul>
+<h1 id="Seata架构中角色"><a href="#Seata架构中角色" class="headerlink" title="Seata架构中角色"></a>Seata架构中角色</h1><ol>
+<li>TC (Transaction Coordinator) - 事务协调者</li>
+</ol>
+<blockquote>
+<p>维护全局和分支事务的状态，驱动全局事务提交或回滚；</p>
+</blockquote>
+<ol start="2">
+<li>TM (Transaction Manager) - 事务管理器</li>
+</ol>
+<blockquote>
+<p>定义全局事务的范围：开始全局事务、提交或回滚全局事务；</p>
+</blockquote>
+<ol start="3">
+<li>RM (Resource Manager) - 资源管理器</li>
+</ol>
+<blockquote>
+<p>管理分支事务处理的资源，与TC交互以注册分支事务和报告分支事务的状态，并驱动分支事务提交或回滚；</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/20210326165758916.png"></p>
+<p>其中<strong>TC为单独部署的 Server 服务端</strong>，TM和RM为嵌入到应用中的 Client 客户端；</p>
+<h1 id="Seata里分布式事务的生命周期"><a href="#Seata里分布式事务的生命周期" class="headerlink" title="Seata里分布式事务的生命周期"></a>Seata里分布式事务的生命周期</h1><p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/20210326165804706.png"></p>
+<ul>
+<li><p>TM请求TC开启一个全局事务，TC会生成一个XID作为该全局事务的编号，XID会在微服务的调用链路中传播，保证将多个微服务的子事务关联在一起；</p>
+</li>
+<li><p>RM请求TC将本地事务注册为全局事务的分支事务，通过全局事务的XID进行关联；</p>
+</li>
+<li><p>TM请求TC告诉XID对应的全局事务是进行提交还是回滚；</p>
+</li>
+<li><p>TC驱动RM将XID对应的自己的本地事务进行提交还是回滚；</p>
+</li>
+</ul>
+<h1 id="TC-Server运行环境部署"><a href="#TC-Server运行环境部署" class="headerlink" title="TC Server运行环境部署"></a>TC Server运行环境部署</h1><ol>
+<li><p>我们先部署单机环境的 Seata TC Server，用于学习或测试，在生产环境中要部署集群环境；</p>
+</li>
+<li><p>因为TC需要进行全局事务和分支事务的记录，所以需要对应的存储，目前，TC有<strong>三种存储模式</strong>( store.mode )：</p>
+</li>
+</ol>
+<ul>
+<li><p>file模式：适合单机模式，全局事务会话信息在内存中读写，并持久化本地文件 root.data，性能较高；</p>
+</li>
+<li><p>db模式：适合集群模式，全局事务会话信息通过 db 共享，相对性能差点；</p>
+</li>
+<li><p>redis模式：解决db存储的性能问题；</p>
+</li>
+</ul>
+<h2 id="file模式部署单机TC-Server"><a href="#file模式部署单机TC-Server" class="headerlink" title="file模式部署单机TC Server"></a>file模式部署单机TC Server</h2><p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/20210326165812407.png"></p>
+<blockquote>
+<p>Seata运行环境部署</p>
+</blockquote>
+<ol>
+<li><p>下载Seata：<a target="_blank" rel="noopener" href="http://seata.io/zh-cn/blog/download.html">http://seata.io/zh-cn/blog/download.html</a></p>
+</li>
+<li><p>解压：tar -zxvf seata-server-1.3.0.tar.gz</p>
+</li>
+<li><p>切换cd seata</p>
+</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/20210326165823647.png"></p>
+<ol start="4">
+<li>默认seata-server.sh脚本设置的jvm内存参数2G，我们再虚拟机里面做实验，可以改小一点；</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/20210326165829730.png"></p>
+<ol start="5">
+<li><p>在bin目录下启动：./seata-server.sh</p>
+</li>
+<li><p>默认配置下，Seata TC Server 启动在 8091 端口；</p>
+</li>
+</ol>
+<p>因为我们没有修改任何配置文件，默认情况seata使用的是file模式进行数据持久化，所以可以看到用于持久化的本地文件 root.data；</p>
+<h1 id="AT模式事务案例"><a href="#AT模式事务案例" class="headerlink" title="AT模式事务案例"></a>AT模式事务案例</h1><h2 id="单体应用多数据源分布式事务"><a href="#单体应用多数据源分布式事务" class="headerlink" title="单体应用多数据源分布式事务"></a>单体应用多数据源分布式事务</h2><p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/20210326165849181.png"></p>
+<blockquote>
+<p>在Spring Boot单体项目中，如果使用了多数据源，就需要考虑多个数据源的数据一致性，即产生了分布式事务的问题，我们采用Seata的AT事务模式来解决该分布式事务问题；</p>
+</blockquote>
+<p>以电商购物下单为例：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/20210326165907656.png"></p>
+<ol>
+<li><p>准备数据库表和数据；其中每个库中的undo_log表，是 <strong>Seata AT模式</strong>必须创建的表，主要用于分支事务的回滚；</p>
+</li>
+<li><p>开发一个SpringBoot单体应用；</p>
+</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/20210326165913986.png"> </p>
+<ol start="3">
+<li>测试：<a target="_blank" rel="noopener" href="http://localhost:8080/order?userId=1&amp;productId=1">http://localhost:8080/order?userId=1&amp;productId=1</a></li>
+</ol>
+<h2 id="微服务的分布式事务"><a href="#微服务的分布式事务" class="headerlink" title="微服务的分布式事务"></a>微服务的分布式事务</h2><p><img src="20210326165921342.png"></p>
+<h2 id="AT事务模式分布式事务工作机制"><a href="#AT事务模式分布式事务工作机制" class="headerlink" title="AT事务模式分布式事务工作机制"></a>AT事务模式分布式事务工作机制</h2><p><strong>前提</strong></p>
+<p>基于支持本地 ACID 事务的关系型数据库；（mysql、oracle）</p>
+<p>Java 应用，通过JDBC访问数据库；</p>
+<p><strong>整体机制</strong></p>
+<p>就是两阶段提交协议的演变：</p>
+<ul>
+<li><p>一阶段：</p>
+<ul>
+<li>“业务数据“和“回滚日志记录“在同一个本地事务中提交，释放本地锁和连接资源；</li>
+</ul>
+</li>
+<li><p>二阶段：</p>
+<ul>
+<li><p>如果没有异常异步化提交，非常快速地完成；</p>
+</li>
+<li><p>如果有异常回滚通过一阶段的回滚日志进行反向补偿；</p>
+</li>
+<li><p>具体举例说明整个AT分支的工作过程：</p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code class="bash">业务表：product
+ 
+Field Type     Key
+ 
+id     bigint(20) PRI
+ 
+name varchar(100)
+ 
+since varchar(100)
+</code></pre>
+<h2 id="AT分支事务的业务逻辑："><a href="#AT分支事务的业务逻辑：" class="headerlink" title="AT分支事务的业务逻辑："></a>AT分支事务的业务逻辑：</h2><pre><code>update product set name = 'GTS' where name = 'TXC';
+</code></pre>
+<ul>
+<li>一阶段过程：</li>
+</ul>
+<ol>
+<li><p>解析SQL，得到SQL的类型（UPDATE），表（product），条件（where name = ‘TXC’）等相关的信息；</p>
+</li>
+<li><p>查询前镜像：根据解析得到的条件信息，生成查询语句，定位数据；</p>
+</li>
+</ol>
+<pre><code>select id, name, since from product where name = 'TXC';
+</code></pre>
+<blockquote>
+<p>得到前镜像：</p>
+</blockquote>
+<pre><code>id name since
+1 TXC     2014
+</code></pre>
+<ol start="3">
+<li><p>执行业务 SQL：更新这条记录的 name 为 ‘GTS’；</p>
+</li>
+<li><p>查询后镜像：根据前镜像的结果，通过 主键 定位数据；</p>
+</li>
+</ol>
+<pre><code>select id, name, since from product where id = 1;
+</code></pre>
+<blockquote>
+<p>得到后镜像：</p>
+</blockquote>
+<pre><code>id name since
+
+1 GTS     2014
+</code></pre>
+<ol start="5">
+<li><p>插入回滚日志：把前后镜像数据以及业务SQL相关的信息组成一条回滚日志记录，插入到 UNDO_LOG 表中；</p>
+</li>
+<li><p>分支事务提交前，向TC注册分支，申请product表中，主键值等于1的记录的全局锁（在当前的同一个全局事务id范围内是可以申请到全局锁的，不同的全局事务id才会排斥）；</p>
+</li>
+<li><p>本地事务提交：业务数据的更新和前面步骤中生成的 UNDO LOG 一并提交；</p>
+</li>
+<li><p>将本地事务提交的结果上报给TC；</p>
+</li>
+</ol>
+<ul>
+<li>二阶段-回滚</li>
+</ul>
+<ol>
+<li><p>收到 TC 的分支回滚请求，开启一个本地事务，执行如下操作；</p>
+</li>
+<li><p>通过 XID 和 Branch ID 查找到相应的 UNDO LOG 记录；</p>
+</li>
+<li><p>数据校验：拿 UNDO LOG 中的后镜像与当前数据进行比较，如果有不同，说明数据被当前全局事务之外的动作做了修改，这种情况，需要人工来处理；</p>
+</li>
+<li><p>根据 UNDO LOG 中的前镜像和业务 SQL 的相关信息生成并执行回滚的语句：</p>
+</li>
+</ol>
+<p>update product set name = ‘TXC’ where id = 1;</p>
+<ol start="5">
+<li>提交本地事务，并把本地事务的执行结果（即分支事务回滚的结果）上报给 TC；</li>
+</ol>
+<ul>
+<li>二阶段-提交</li>
+</ul>
+<ol>
+<li><p>收到TC的分支提交请求，把请求放入一个异步任务的队列中，马上返回提交成功的结果给TC；</p>
+</li>
+<li><p>异步任务阶段的分支提交请求将异步和批量地删除相应UNDO LOG记录；</p>
+</li>
+</ol>
+<pre><code class="bash">回滚日志表：
+Field         Type
+ 
+branch_id     bigint       PK
+ 
+xid             varchar(100)
+ 
+context         varchar(128)
+ 
+rollback_info longblob
+ 
+log_status     tinyint
+ 
+log_created     datetime
+ 
+log_modified datetime
+
+
+SQL建表语句：
+ 
+CREATE TABLE `undo_log` (
+ 
+  `id` bigint NOT NULL AUTO_INCREMENT,
+ 
+  `branch_id` bigint NOT NULL,
+ 
+  `xid` varchar(100) NOT NULL,
+ 
+  `context` varchar(128) NOT NULL,
+ 
+  `rollback_info` longblob NOT NULL,
+ 
+  `log_status` int NOT NULL,
+ 
+  `log_created` datetime NOT NULL,
+ 
+  `log_modified` datetime NOT NULL,
+ 
+  PRIMARY KEY (`id`),
+ 
+  UNIQUE KEY `ux_undo_log` (`xid`,`branch_id`)
+ 
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+</code></pre>
+<h2 id="AT事务模式运行机制解读"><a href="#AT事务模式运行机制解读" class="headerlink" title="AT事务模式运行机制解读"></a>AT事务模式运行机制解读</h2><blockquote>
+<p>AT 模式的前提：</p>
+</blockquote>
+<ol>
+<li><p>基于支持本地 ACID 事务的关系型数据库；</p>
+</li>
+<li><p>Java 应用，通过 JDBC 访问数据库；</p>
+</li>
+</ol>
+<p>整体机制是两阶段提交协议的演变：</p>
+<ol>
+<li><p>一阶段：业务数据和回滚日志记录在同一个本地事务中提交，释放本地锁和连接资源；（本地事务，就已经在数据库持久化了）</p>
+</li>
+<li><p>二阶段：</p>
+</li>
+</ol>
+<p>如果没有异常提交异步化，非常快速地完成；（正常情况，那就提交了，同步一下TC Server的状态，删除回滚日志）</p>
+<p>如果有异常回滚通过一阶段的回滚日志进行反向补偿；（比如订单删除，库存加回去，余额加回去）；</p>
+<p><strong>写隔离</strong></p>
+<p>一阶段本地事务提交前，需要确保先拿到<code>全局锁</code>；</p>
+<p>拿不到 <code>全局锁</code> ，不能提交本地事务；</p>
+<p>拿 <code>全局锁</code> 的尝试被限制在一定范围内，超出范围将放弃，并回滚本地事务，释放本地锁；</p>
+<p>以一个示例来说明： </p>
+<p><strong>两个</strong>或者多个全局事务 tx1 和 tx2，分别并发对 a 表的 m 字段进行更新操作，m 的初始值 1000；</p>
+<p>假设tx1 先开始，开启本地事务，拿到本地锁，更新操作 m = 1000 - 100 = 900,本地事务提交前，先拿到该记录的 <code>全局锁</code> ，拿到了全局锁，本地提交并释放本地锁；</p>
+<p>tx2后开始，开启本地事务，拿到本地锁，更新操作 m = 900 - 100 = 800，本地事务提交前，尝试拿该记录的 全局锁 ，tx1全局提交前，该记录的全局锁一直会被 tx1 持有，tx2 需要重试等待 <code>全局锁</code> ；</p>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/20210326170405492.png"> </p>
+<p>tx1 二阶段全局提交，释放 全局锁 ，tx2 拿到<code> 全局锁</code> 提交本地事务；</p>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/20210326170411747.png"> </p>
+<p>如果 tx1 的二阶段全局回滚，则 tx1 需要重新获取该数据的本地锁，进行反向补偿的更新操作，实现分支的回滚；</p>
+<p>此时，如果 tx2 仍在等待该数据的 全局锁，同时持有本地锁，则 tx1 的分支回滚会失败。分支的回滚会一直重试，直到 tx2 的 全局锁 等锁超时，放弃 全局锁 并回滚本地事务释放本地锁，tx1 的分支回滚最终成功；</p>
+<p>因为整个过程 全局锁 在 tx1 结束前一直是被 tx1 持有的，所以不会发生 脏写 的问题；</p>
+<p><strong>读隔离</strong></p>
+<p>在数据库本地事务隔离级别 读已提交（Read Committed） 或以上的基础上，<code>Seata</code>（AT 模式）的默认全局隔离级别是 读未提交（Read Uncommitted）；</p>
+<p>如果应用在特定场景下，必需要求全局的 读已提交 ，目前 Seata 的方式是通过 SELECT FOR UPDATE 语句的代理；</p>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/20210326170420496.png"> </p>
+<p>SELECT FOR UPDATE 语句的执行会申请 全局锁 ，如果 全局锁 被其他事务持有，则释放本地锁（回滚 SELECT FOR UPDATE 语句的本地执行）并重试，这个过程中，查询是被 block 住的，直到 全局锁 拿到，即读取的相关数据是 已提交 的，才返回；</p>
+<p>出于总体性能上的考虑，Seata目前的方案并没有对所有SELECT语句都进行代理，仅针对 FOR UPDATE 的 SELECT 语句；</p>
+<h3 id="Seata-TC-Server集群部署"><a href="#Seata-TC-Server集群部署" class="headerlink" title="Seata TC Server集群部署"></a>Seata TC Server集群部署</h3><p>生产环境下，需要部署集群 Seata TC Server，实现高可用，在集群时，多个 Seata TC Server 通过 db 数据库或者redis实现全局事务会话信息的共享；</p>
+<p>每个Seata TC Server注册自己到注册中心上，应用从注册中心获得Seata TC Server实例，这就是Seata TC Server的集群；</p>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/20210326170425973.png"> </p>
+<p>Seata TC Server 对主流的注册中心都提供了集成，Naco作为注册中心越来越流行，这里我们就采用Nacos；</p>
+<p>Seata TC Server集群搭建具体步骤：</p>
+<ol>
+<li><p>下载并解压两个seata-server-1.3.0.tar.gz；</p>
+</li>
+<li><p>初始化 Seata TC Server 的 db 数据库，在 MySQL 中，创建 seata 数据库，并在该库下执行如下SQL脚本：</p>
+</li>
+</ol>
+<p>使用seata-1.3.0\script\server\db脚本（网盘有共享）</p>
+<ol start="3">
+<li>修改 seata/conf/file.conf 配置文件，修改使用 db 数据库，实现 Seata TC Server 的全局事务会话信息的共享；</li>
+</ol>
+<pre><code class="bash"> 1）mode = "db"
+（2）数据库的连接信息
+ driverClassName = "com.mysql.cj.jdbc.Driver"
+url = "jdbc:mysql://39.99.163.122:3306/seata"
+ user = "mysql"
+password = "UoT1R8[09/VsfXoO5&gt;6YteB"
+</code></pre>
+<ol start="4">
+<li>设置使用 Nacos 注册中心；</li>
+</ol>
+<ul>
+<li>修改 seata/conf/registry.conf 配置文件，设置使用 Nacos 注册中心；</li>
+</ul>
+<pre><code class="bash">、type = "nacos"
+Nacos连接信息：
+nacos {
+
+    application = "seata-server"
+
+    serverAddr = "127.0.0.1:8848"
+
+    group = "SEATA_GROUP"
+
+    namespace = ""
+
+    cluster = "default"
+
+    username = ""
+
+    password = ""
+
+}
+</code></pre>
+<p>5、启动数据库和nacos；</p>
+<p>6、启动两个 TC Server (虚拟机的话指定-h 否则默认是本地ip)</p>
+<p>执行</p>
+<p>nohup ./seata-server.sh -h 192.168.247.129  -p 8091 -m db  -n 1 &gt;/usr/local/seata/bin/seata.log 2&gt;&amp;1 &amp;</p>
+<p>命令，启动第一个TC Server;</p>
+<p>-p：Seata TC Server 监听的端口；</p>
+<p>-n：Server node，在多个 TC Server 时，需区分各自节点，用于生成不同区间的 transactionId 事务编号，以免冲突；</p>
+<p>执行  </p>
+<p>nohup ./seata-server.sh -h 192.168.247.130  -p 8092 -m db  -n 2&gt;/usr/local/seata/bin/seata.log 2&gt;&amp;1 &amp;  </p>
+<p>命令，启动第二个TC Server；</p>
+<ol start="7">
+<li>打开Nacos注册中心控制台，可以看到有两个Seata TC Server 实例；</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/20210326170452179.png"><br>8. 应用测试；</p>
+<p><strong>对于SpringBoot单体应用：</strong></p>
+<ol>
+<li>添加nacos客户端依赖；</li>
+</ol>
+<pre><code class="bash">&lt;!-- nacos-client --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.alibaba.nacos&lt;/groupId&gt;
+    &lt;artifactId&gt;nacos-client&lt;/artifactId&gt;
+    &lt;version&gt;1.3.1&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<ol start="2">
+<li>配置application.properties文件</li>
+</ol>
+<pre><code class="bash">
+#----------------------------------------------------------
+# Seata应用编号，默认为${spring.application.name}
+seata.application-id=springcloud-order-seata
+# Seata事务组编号，用于TC集群名
+seata.tx-service-group=springcloud-order-seata-group
+# 虚拟组和分组的映射
+seata.service.vgroup-mapping.springcloud-order-seata-group=default
+
+#seata-spring-boot-starter 1.1版本少一些配置项
+seata.enabled=true
+seata.registry.type=nacos
+seata.registry.nacos.cluster=default
+seata.registry.nacos.server-addr=192.168.172.128:8848
+seata.registry.nacos.group=SEATA_GROUP
+seata.registry.nacos.application=seata-server
+</code></pre>
+<p><strong>对于Spring Cloud Alibaba微服务应用</strong>：</p>
+<p>则不需要加nacos的jar包依赖，application.properties文件配置完全一样；</p>
+<h3 id="TCC事务模式执行机制"><a href="#TCC事务模式执行机制" class="headerlink" title="TCC事务模式执行机制"></a>TCC事务模式执行机制</h3><blockquote>
+<p>AT模式基本上能满足我们使用分布式事务大部分需求，但涉及非关系型数据库与中间件的操作、跨公司服务的调用、跨语言的应用调用就需要结合TCC模式；</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/2021032617051976.png"></p>
+<p>一个分布式的全局事务，整体是两阶段提交（<code>Try - [Comfirm/Cancel]</code>）的模型，在Seata中，AT模式与TCC模式事实上都是基于两阶段提交，它们的区别在于：</p>
+<blockquote>
+<p>AT模式基于支持本地ACID事务的关系型数据库：</p>
+</blockquote>
+<ol>
+<li><p>一阶段prepare行为：在本地事务中，一并提交“业务数据更新“和”相应回滚日志记录”；</p>
+</li>
+<li><p>二阶段 commit 行为：马上成功结束，自动异步批量清理回滚日志；</p>
+</li>
+<li><p>二阶段 rollback 行为：通过回滚日志，自动生成补偿操作，完成数据回滚；</p>
+</li>
+</ol>
+<blockquote>
+<p>而TCC 模式，需要我们人为编写代码实现提交和回滚：</p>
+</blockquote>
+<ol>
+<li><p>一阶段 prepare 行为：调用自定义的 prepare 逻辑；(真正要做的事情，比如插入订单，更新库存，更新余额)</p>
+</li>
+<li><p>二阶段 commit 行为：调用自定义的 commit 逻辑；（自己写代码实现）</p>
+</li>
+<li><p>二阶段 rollback 行为：调用自定义的 rollback 逻辑；（自己写代码实现）</p>
+</li>
+</ol>
+<p>所以TCC模式，就是把自定义的分支事务的提交和回滚并纳入到全局事务管理中；</p>
+<p>通俗来说，Seata的TCC模式就是手工版本的AT模式，它允许你自定义两阶段的处理逻辑而不需要依赖AT模式的undo_log回滚表；</p>
+<h2 id="TCC事务模式应用实践"><a href="#TCC事务模式应用实践" class="headerlink" title="TCC事务模式应用实践"></a>TCC事务模式应用实践</h2><ol>
+<li>基于SpringBoot单体应用的TCC事务</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/2021032617051976.png"></p>
+<pre><code class="bash">
+@LocalTCC
+public interface AccountService {
+    /**
+     * 扣除余额
+     * 定义两阶段提交
+     * name = reduceStock为一阶段try方法
+     * commitMethod = commitTcc 为二阶段确认方法
+     * rollbackMethod = cancel 为二阶段取消方法
+     * BusinessActionContextParameter注解 可传递参数到二阶段方法
+     *
+     * @param userId 用户ID
+     * @param money  扣减金额
+     * @throws Exception 失败时抛出异常
+     */
+    @TwoPhaseBusinessAction(name = "reduceBalance", commitMethod = "commitTcc", rollbackMethod = "cancelTcc")
+    void reduceBalance(@BusinessActionContextParameter(paramName = "userId") Integer userId,
+                       @BusinessActionContextParameter(paramName = "money") BigDecimal money);
+
+    /**
+     * 确认方法、可以另命名，但要保证与commitMethod一致
+     * context可以传递try方法的参数
+     *
+     * @param context 上下文
+     * @return boolean
+     */
+    boolean commitTcc(BusinessActionContext context);
+
+    /**
+     * 二阶段取消方法
+     *
+     * @param context 上下文
+     * @return boolean
+     */
+    boolean cancelTcc(BusinessActionContext context);
+}
+</code></pre>
+<p><code>@LocalTCC</code>注解标识此TCC为本地模式，即该事务是本地调用，非RPC调用，<code>@LocalTCC</code>一定需要注解在接口上，此接口可以是寻常的业务接口，只要实现了TCC的两阶段提交对应方法即可；</p>
+<p><code>@TwoPhaseBusinessAction</code>，该注解标识为TCC模式，注解try方法，其中name为当前tcc方法的bean名称，写方法名便可（全局唯一），commitMethod指提交方法，rollbackMethod指事务回滚方法，指定好三个方法之后，Seata会根据事务的成功或失败，通过动态代理去帮我们自动调用提交或者回滚；</p>
+<p><code>@BusinessActionContextParameter</code> 注解可以将参数传递到二阶段（commitMethod/rollbackMethod）的方法；</p>
+<p><code>BusinessActionContext</code> 是指TCC事务上下文，携带了业务方法的参数；</p>
+<blockquote>
+<ol>
+<li>基于Spring Cloud Alibaba的TCC分布式事务</li>
+<li>具体代码实现和springboot单体应用的代码实现几乎没有区别，具体参考Git上提交的代码；</li>
+<li>由于Seata出现时间并不长，也在不断的改进中，在实际面试中应该不会问大家比较底层的实现，同学们如果感兴趣的话，基于我们已有的源码阅读经验，可以看一下Seata的源码，它如何进行事务隔离保证数据一致性，官方提供的文档并不详细；</li>
+</ol>
+</blockquote>
+<h1 id="Seata总结："><a href="#Seata总结：" class="headerlink" title="Seata总结："></a>Seata总结：</h1><ol>
+<li>Seata 三种角色<ul>
+<li>TM事务管理器：相当于业务中台,向TC发起全局事务的开始触发,让其生成全局事务ID, 向TC发起全局事务的提交或者回滚信号</li>
+<li>TC事务协调器: 生成全局事务ID XID,协调每个RM资源管理器，触发子事务的事务提交和事务回滚</li>
+<li>RM资源管理器：程序已启动就向TC注册自己的信息,负责自己子事务的本地事务提交和本地事务回滚</li>
+</ul>
+</li>
+<li>Seata 流程</li>
+</ol>
+<ul>
+<li><p>一阶段：</p>
+<ul>
+<li>TM向TC发起一个全局事务请求操作，TC生成一个全局事务XID，XID会在微服务的调用链路中传播</li>
+<li>RM准备执行本地事务请求，申请本地事务锁和申请全局事务锁，拿全局事务锁的尝试被限制在一定范围内，超出范围将放弃，并回滚本地事务，释放本地锁。</li>
+<li>如果全局事务锁被其他资源占据，需要等待并尝试获取全局事务锁，本地事务和UndoLog日志文件一起完成提交，释放本地事<br>务锁，</li>
+</ul>
+</li>
+<li><p>二阶段-回滚：</p>
+<ul>
+<li>如果其中一个RM本地事务提交失败,抛出异常,TM捕捉到异常信息,向TC发起全局事务回滚信号，TC协调每个RM逐步发起本地事务回滚</li>
+<li>回滚的时候会对比UndoLog日志的afterImage后快照和当前数据做对比，如果不一致，则出现了“脏写”需要人工介入操作，如果一致，更新的数据需要更新回原来数据，新增的数据需要删除</li>
+</ul>
+</li>
+<li><p>二阶段-提交：</p>
+<ul>
+<li>如果每一个RM本地事务提交都成功，TM向TC发起全局事务提交信号，TC异步协调让所有RM本地事务快速提交</li>
+</ul>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">阿健君</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/">http://example.com/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">HJ 的学习录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/">分布式事务</a><a class="post-meta__tags" href="/tags/SEATA/">SEATA</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/seata.jpeg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer=""></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="微信扫码"></a><div class="post-qr-code-desc">微信扫码</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="支付宝扫码"></a><div class="post-qr-code-desc">支付宝扫码</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/cache.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">怎么利用Redis实现数据的去重？</div></div></a></div><div class="next-post pull-right"><a href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/traditional.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">分布式事务</div></div></a></div></nav><hr><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div id="comment-switch"><span class="first-comment">Valine</span><span class="switch-btn"></span><span class="second-comment">Disqus</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div><div><div id="disqus_thread"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"></div><div class="author-info__name">阿健君</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>qq:1064821280</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/junian455" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/1064821280@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://junian455.github.io/" target="_blank" title="Blog"><i class="fas fa-rss-square"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">哈喽，有问题的话请在留言板留言，我看到会第一时间回复你。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#What-is-seata%EF%BC%9F"><span class="toc-text">What is seata？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Seata%E6%9E%B6%E6%9E%84%E4%B8%AD%E8%A7%92%E8%89%B2"><span class="toc-text">Seata架构中角色</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Seata%E9%87%8C%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">Seata里分布式事务的生命周期</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#TC-Server%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83%E9%83%A8%E7%BD%B2"><span class="toc-text">TC Server运行环境部署</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#file%E6%A8%A1%E5%BC%8F%E9%83%A8%E7%BD%B2%E5%8D%95%E6%9C%BATC-Server"><span class="toc-text">file模式部署单机TC Server</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#AT%E6%A8%A1%E5%BC%8F%E4%BA%8B%E5%8A%A1%E6%A1%88%E4%BE%8B"><span class="toc-text">AT模式事务案例</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E4%BD%93%E5%BA%94%E7%94%A8%E5%A4%9A%E6%95%B0%E6%8D%AE%E6%BA%90%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="toc-text">单体应用多数据源分布式事务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="toc-text">微服务的分布式事务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AT%E4%BA%8B%E5%8A%A1%E6%A8%A1%E5%BC%8F%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6"><span class="toc-text">AT事务模式分布式事务工作机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AT%E5%88%86%E6%94%AF%E4%BA%8B%E5%8A%A1%E7%9A%84%E4%B8%9A%E5%8A%A1%E9%80%BB%E8%BE%91%EF%BC%9A"><span class="toc-text">AT分支事务的业务逻辑：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AT%E4%BA%8B%E5%8A%A1%E6%A8%A1%E5%BC%8F%E8%BF%90%E8%A1%8C%E6%9C%BA%E5%88%B6%E8%A7%A3%E8%AF%BB"><span class="toc-text">AT事务模式运行机制解读</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Seata-TC-Server%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2"><span class="toc-text">Seata TC Server集群部署</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TCC%E4%BA%8B%E5%8A%A1%E6%A8%A1%E5%BC%8F%E6%89%A7%E8%A1%8C%E6%9C%BA%E5%88%B6"><span class="toc-text">TCC事务模式执行机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TCC%E4%BA%8B%E5%8A%A1%E6%A8%A1%E5%BC%8F%E5%BA%94%E7%94%A8%E5%AE%9E%E8%B7%B5"><span class="toc-text">TCC事务模式应用实践</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Seata%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-text">Seata总结：</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理"><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/%E7%BA%A2%E9%BB%912%E6%A0%91.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="红黑树原理"></a><div class="content"><a class="title" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理">红黑树原理</a><time datetime="2022-04-16T02:55:00.000Z" title="发表于 2022-04-16 10:55:00">2022-04-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="设计模式-行为型设计模式"></a><div class="content"><a class="title" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式">设计模式-行为型设计模式</a><time datetime="2022-04-02T08:11:00.000Z" title="发表于 2022-04-02 16:11:00">2022-04-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/cache.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="怎么利用Redis实现数据的去重？"></a><div class="content"><a class="title" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？">怎么利用Redis实现数据的去重？</a><time datetime="2022-03-14T06:29:00.000Z" title="发表于 2022-03-14 14:29:00">2022-03-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/seata.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SEATA"></a><div class="content"><a class="title" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA">SEATA</a><time datetime="2022-01-20T07:11:00.000Z" title="发表于 2022-01-20 15:11:00">2022-01-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/traditional.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="分布式事务"></a><div class="content"><a class="title" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务">分布式事务</a><time datetime="2022-01-10T03:11:00.000Z" title="发表于 2022-01-10 11:11:00">2022-01-10</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">©2020 - 2022 By 阿健君</div><div class="footer_custom_text"><span style="margin-top:5px;display:inline-block;font-weight:bold;font-size:14px">一分耕耘，一分收获。</span><p></p> <p><a target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" title="博客框架为Hexo" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://demo.jerryc.me/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" title="主题采用butterfly" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://metroui.org.ua/index.html "><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&amp;logo=jsDelivr" title="本站使用JsDelivr为静态资源提供CDN加速" data-ll-status="loading" class="entered loading"></a> &nbsp;<a target="_blank" href="https://vercel.com/ "><img src="https://img.shields.io/badge/Hosted-Vervel-brightgreen?style=flat&amp;logo=Vercel" title="本站采用双线部署，默认线路托管于Vercel" data-ll-status="loading" class="entered loading"></a>&nbsp;<a class="github-badge" target="_blank" href="https://beian.miit.gov.cn" style="margin-inline:5px" title="本站已在工信部备案，备案号浙ICP备-2022001668号"><img src="http://cdn.ymktchic.top/img/202201212329189.svg" data-lazy-src="" alt="" data-ll-status="loaded" class="entered loaded"></a>&nbsp;<a target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&amp;logo=Claris" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" data-ll-status="loading" class="entered loading"></a> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="95" height="20" role="img" aria-label="CDN:又拍云"><title>CDN:又拍云</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"></stop><stop offset="1" stop-opacity=".1"></stop></linearGradient><clipPath id="r"><rect width="95" height="20" rx="3" fill="#fff"></rect></clipPath><g clip-path="url(#r)"><rect width="52" height="20" fill="#555"></rect><rect x="52" width="43" height="20" fill="#00b6ff"></rect><rect width="95" height="20" fill="url(#s)"></rect></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><image x="5" y="3" width="14" height="14" xlink:href="https://developer.qiniu.com/assets/logo-white-b90d685a6b146884636382426d11b7236f5f7ca1c5dfafdb6fa777a0f976fc1f.png"></image><text aria-hidden="true" x="355" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="250">CDN</text><text x="355" y="140" transform="scale(.1)" fill="#fff" textLength="250">CDN</text><text aria-hidden="true" x="725" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="330">七牛云</text><text x="725" y="140" transform="scale(.1)" fill="#fff" textLength="330">七牛云</text></g></svg></p></div></div><div class="container" id="jsi-flying-fish-container"></div><style>@media only screen and (max-width: 767px){
+  #sidebar_search_box input[type=text]{width:calc(100% - 24px)}
+}</style></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">本地搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script>function loadDisqus () {
+  var disqus_config = function () {
+    this.page.url = 'http://example.com/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/'
+    this.page.identifier = '2022/01/20/分布式事务/SEATA/'
+    this.page.title = 'SEATA'
+  };
+
+  window.disqusReset = () => {
+    DISQUS.reset({
+      reload: true,
+      config: disqus_config
+    })
+  }
+
+  if (window.DISQUS) disqusReset()
+  else {
+    (function() { 
+      var d = document, s = d.createElement('script');
+      s.src = 'https://.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  }
+}
+
+if ('Valine' === 'Disqus' || !true) {
+  if (true) btf.loadComment(document.getElementById('disqus_thread'), loadDisqus)
+  else loadDisqus()
+} else {
+  function loadOtherComment () {
+    loadDisqus()
+  }
+}
+</script></div><script src="/js/card_categor_hide.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script data-pjax="" src="https://cdn.jsdelivr.net/gh/Jnylife/CDN@1.3/js/fish.js"></script><script src="https://cdn.jsdelivr.net/gh/sviptzk/HexoStaticFile@latest/Hexo/js/WithoutLine.min.js"></script><div class="aplayer no-destroy" data-id="60198" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script async="" data-pjax="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

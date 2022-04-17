@@ -1,0 +1,2126 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>多线程与高并发 — 同步锁 | HJ 的学习录</title><meta name="keywords" content="Monitor,synchronized,wait/notify,park/unpark,ReentrantLock"><meta name="author" content="阿健君"><meta name="copyright" content="阿健君"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="共享模型之管程线程共享带来的问题线程出现问题的根本原因是因为线程上下文切换，导致线程里的指令没有执行完就切换执行其它线程了。 public static int count = 0;     public static void main(String[] args) throws InterruptedException &amp;#123;         Thread t1 = new Thread">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多线程与高并发 — 同步锁">
+<meta property="og:url" content="http://example.com/2020/09/03/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E5%90%8C%E6%AD%A5%E9%94%81/index.html">
+<meta property="og:site_name" content="HJ 的学习录">
+<meta property="og:description" content="共享模型之管程线程共享带来的问题线程出现问题的根本原因是因为线程上下文切换，导致线程里的指令没有执行完就切换执行其它线程了。 public static int count = 0;     public static void main(String[] args) throws InterruptedException &amp;#123;         Thread t1 = new Thread">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/synchronized.jpg">
+<meta property="article:published_time" content="2020-09-03T02:22:00.000Z">
+<meta property="article:modified_time" content="2020-09-03T02:22:00.000Z">
+<meta property="article:author" content="阿健君">
+<meta property="article:tag" content="Monitor">
+<meta property="article:tag" content="synchronized">
+<meta property="article:tag" content="wait/notify">
+<meta property="article:tag" content="park/unpark">
+<meta property="article:tag" content="ReentrantLock">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/synchronized.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2020/09/03/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E5%90%8C%E6%AD%A5%E9%94%81/"><link rel="preconnect" href="//cdn.jsdelivr.net"><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""><link rel="preconnect" href="//busuanzi.ibruce.info"><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: undefined,
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '多线程与高并发 — 同步锁',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2020-09-03 10:22:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/scollbar.css"><link rel="stylesheet" href="/css/bottomsetting.css"><link rel="stylesheet" href="/css/card_categor_hide.css"><link rel="stylesheet" href="/css/article_bak_transparent.css"><link rel="stylesheet" href="/css/index_tag.css"><link rel="stylesheet" href="/css/index_tag2.css"><link rel="stylesheet" href="/css/modify.css"><link rel="stylesheet" href="/css/index_tag3.css"><meta name="generator" content="Hexo 5.4.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="wizard-scene"><div class="wizard-objects"><div class="wizard-square"></div><div class="wizard-circle"></div><div class="wizard-triangle"></div></div><div class="wizard"><div class="wizard-body"></div><div class="wizard-right-arm"><div class="wizard-right-hand"></div></div><div class="wizard-left-arm"><div class="wizard-left-hand"></div></div><div class="wizard-head"><div class="wizard-beard"></div><div class="wizard-face"><div class="wizard-adds"></div></div><div class="wizard-hat"><div class="wizard-hat-of-the-hat"></div><div class="wizard-four-point-star --first"></div><div class="wizard-four-point-star --second"></div><div class="wizard-four-point-star --third"></div></div></div></div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><hr><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/gh/junian455/pic@master/img/top_img.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">HJ 的学习录</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-book"></i><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></li><li><a class="site-page child" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-th-large"></i><span> 百宝箱</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-user-shield"></i><span> 评论管理</span></a></li><li><a class="site-page child" href="//"><i class="fa-fw fa-fw fas fa-cloud"></i><span> 我的云盘</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-photo-video"></i><span> 生活</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa-fw fas fa-child"></i><span> 社交</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/fcircle/"><i class="fa-fw fa-fw fas fa-user-friends"></i><span> 朋友圈</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageboard/"><i class="fa-fw fa-fw fas fa-comments"></i><span> 留言板</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">多线程与高并发 — 同步锁</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-09-03T02:22:00.000Z" title="发表于 2020-09-03 10:22:00">2020-09-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-09-03T02:22:00.000Z" title="更新于 2020-09-03 10:22:00">2020-09-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="多线程与高并发 — 同步锁"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><div class="top-img" style="background-image: url('https://cdn.jsdelivr.net/gh/junian455/pic@master/img/top_img.png');"></div><article class="post-content" id="article-container"><h1 id="共享模型之管程"><a href="#共享模型之管程" class="headerlink" title="共享模型之管程"></a>共享模型之管程</h1><h2 id="线程共享带来的问题"><a href="#线程共享带来的问题" class="headerlink" title="线程共享带来的问题"></a>线程共享带来的问题</h2><p>线程出现问题的根本原因是因为线程上下文切换，导致线程里的指令没有执行完就切换执行其它线程了。</p>
+<pre><code>public static int count = 0;
+    public static void main(String[] args) throws InterruptedException {
+        Thread t1 = new Thread(() -&gt; {
+            for (int i = 1;i &lt; 5000; i++){
+                count++;
+            }
+        });
+        Thread t2 = new Thread(() -&gt; {
+            for (int i = 1;i &lt; 5000; i++){
+                count--;
+            }
+        });
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        log.debug("count的值是{}",count);
+    }
+</code></pre>
+<p>如上代码，当执行 count++ 或者 count– 操作的时候，从字节码分析，实际上是 4 步操作：</p>
+<pre><code>count++; 
+// 操作字节码如下：
+getstatic i // 获取静态变量i的值
+iconst_1 // 准备常量1
+iadd // 自增
+putstatic i // 将修改后的值存入静态变量i
+
+count--; 
+// 操作字节码如下：
+getstatic i // 获取静态变量i的值
+iconst_1 // 准备常量1
+isub // 自减
+putstatic i // 将修改后的值存入静态变量i
+</code></pre>
+<p>如果上面代码是单线程按顺序运行的，那么 count 的值不会计算错，执行过程如下图所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/image-20210603162020219.png"></p>
+<p>但多线程下上面代码可能交错运行，出现负数的情况：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/image-20210603162438074.png"></p>
+<p>但多线程下上面代码可能交错运行，出现正数的情况：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/image-20210603162738148.png"></p>
+<ol>
+<li>临界区 Critical Section</li>
+</ol>
+<ul>
+<li><p>一个程序运行多个线程本身是没有问题的；</p>
+</li>
+<li><p>问题出在多个线程访问共享资源：</p>
+<ul>
+<li>多个线程读共享资源其实也没有问题；</li>
+<li>在多个线程对共享资源读写操作时发生指令交错，就会出现问题。</li>
+</ul>
+</li>
+<li><p>一段代码块内如果存在对共享资源的多线程读写操作，称这段代码块为临界区。</p>
+</li>
+</ul>
+<p>例如下面代码中的临界区：</p>
+<pre><code>static int counter = 0;
+ 
+static void increment() 
+// 临界区 
+{   
+    counter++; 
+}
+ 
+static void decrement() 
+// 临界区 
+{ 
+    counter--; 
+}
+</code></pre>
+<ol start="2">
+<li>竞态条件 Race Condition</li>
+</ol>
+<p>多个线程在临界区内执行，由于代码的执行序列不同而导致结果无法预测，称之为发生了竞态条件。</p>
+<h2 id="synchronized-解决方案"><a href="#synchronized-解决方案" class="headerlink" title="synchronized 解决方案"></a>synchronized 解决方案</h2><p>为了避免临界区中的竞态条件发生，由多种手段可以达到：</p>
+<ul>
+<li>阻塞式解决方案：synchronized 、Lock</li>
+<li>非阻塞式解决方案：原子变量</li>
+</ul>
+<p>使用 synchronized 来进行解决，即俗称的对象锁，它采用互斥的方式让同一时刻至多只有一个线程持有对象锁，其他线程如果想获取这个锁就会阻塞住，这样就能保证拥有锁的线程可以安全的执行临界区内的代码，不用担心线程上下文切换。</p>
+<blockquote>
+<p>注意：虽然 java 中互斥和同步都可以采用 synchronized 关键字来完成，但它们还是有区别的：</p>
+</blockquote>
+<ul>
+<li>互斥是保证临界区的竞态条件发生，同一时刻只能有一个线程执行临界区代码。</li>
+<li>同步是由于线程执行的先后、顺序不同，需要一个线程等待其它线程运行到某个点。</li>
+</ul>
+<p><strong>synchronized 语法</strong></p>
+<pre><code>synchronized(对象) {
+    //临界区
+}
+</code></pre>
+<p>上面的实例程序使用 synchronized 后如下，计算出的结果是正确！</p>
+<pre><code>static int counter = 0;
+static final Object room = new Object();
+public static void main(String[] args) throws InterruptedException {
+     Thread t1 = new Thread(() -&gt; {
+         for (int i = 0; i &lt; 5000; i++) {
+             synchronized (room) {
+             counter++;
+            }
+         }
+     }, "t1");
+     Thread t2 = new Thread(() -&gt; {
+         for (int i = 0; i &lt; 5000; i++) {
+             synchronized (room) {
+             counter--;
+         }
+     }
+     }, "t2");
+     t1.start();
+     t2.start();
+     t1.join();
+     t2.join();
+     log.debug("{}",counter);
+}
+</code></pre>
+<p>synchronized 实际上利用对象保证了临界区代码的原子性，临界区内的代码在外界看来是不可分割的，不会被线程切换所打断。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/image-20210603182210273.png"></p>
+<h2 id="synchronized-加在方法上"><a href="#synchronized-加在方法上" class="headerlink" title="synchronized 加在方法上"></a>synchronized 加在方法上</h2><pre><code>class Test{
+        public synchronized void test() {
+
+        }
+    }
+    //等价于锁住对象
+    class Test{
+        public void test() {
+            synchronized(this) {
+
+            }
+        }
+    }
+
+
+    class Test{
+        public synchronized static void test() {
+        }
+    }
+   // 等价于锁住类
+    class Test{
+        public static void test() {
+            synchronized(Test.class) {
+
+            }
+        }
+    }
+</code></pre>
+<h2 id="所谓的线程八锁"><a href="#所谓的线程八锁" class="headerlink" title="所谓的线程八锁"></a>所谓的线程八锁</h2><p><strong>其实就是考察 synchronized 锁住的是哪个对象。</strong></p>
+<ul>
+<li>情况 1：12 或 21</li>
+</ul>
+<pre><code>class Number{
+     public synchronized void a() {
+         log.debug("1");
+     }
+     public synchronized void b() {
+         log.debug("2");
+     }
+}
+public static void main(String[] args) {
+     Number n1 = new Number();
+     new Thread(()-&gt;{ n1.a(); }).start();
+     new Thread(()-&gt;{ n1.b(); }).start();
+}
+</code></pre>
+<ul>
+<li>情况 2：1s 后 12，或 2 1s 后 1</li>
+</ul>
+<pre><code>class Number{
+     public synchronized void a() {
+        sleep(1);
+         log.debug("1");
+     }
+     public synchronized void b() {
+         log.debug("2");
+     }
+}
+public static void main(String[] args) {
+     Number n1 = new Number();
+     new Thread(()-&gt;{ n1.a(); }).start();
+     new Thread(()-&gt;{ n1.b(); }).start();
+}
+</code></pre>
+<ul>
+<li>情况 3：3 1s 12 或 2 3 1s 1 或 32 1s 1</li>
+</ul>
+<pre><code>class Number{
+     public synchronized void a() {
+        sleep(1);
+         log.debug("1");
+     }
+     public synchronized void b() {
+         log.debug("2");
+     }
+    public synchronized void c() {
+         log.debug("3");
+     }
+}
+public static void main(String[] args) {
+     Number n1 = new Number();
+     new Thread(()-&gt;{ n1.a(); }).start();
+     new Thread(()-&gt;{ n1.b(); }).start();
+    new Thread(()-&gt;{ n1.c(); }).start();
+}
+</code></pre>
+<ul>
+<li>情况 4：2 1s 后 1</li>
+</ul>
+<pre><code>class Number{
+     public synchronized void a() {
+        sleep(1);
+         log.debug("1");
+     }
+     public synchronized void b() {
+         log.debug("2");
+     }
+}
+public static void main(String[] args) {
+     Number n1 = new Number();
+    Number n2 = new Number();
+     new Thread(()-&gt;{ n1.a(); }).start();
+     new Thread(()-&gt;{ n2.b(); }).start();
+}
+</code></pre>
+<ul>
+<li>情况 5：2 1s 后 1</li>
+</ul>
+<pre><code>class Number{
+     public static synchronized void a() {
+        sleep(1);
+         log.debug("1");
+     }
+     public synchronized void b() {
+         log.debug("2");
+     }
+}
+//对象锁 b方法获得
+public static void main(String[] args) {
+     Number n1 = new Number();
+    Number n2 = new Number();
+     new Thread(()-&gt;{ n1.a(); }).start();
+     new Thread(()-&gt;{ n2.b(); }).start();
+}
+</code></pre>
+<p>情况 6：1s 后 12， 或 2 1s 后 1</p>
+<pre><code>class Number{
+     public static synchronized void a() {
+        sleep(1);
+         log.debug("1");
+     }
+     public static synchronized void b() {
+         log.debug("2");
+     }
+}
+
+public static void main(String[] args) {
+     Number n1 = new Number();
+     new Thread(()-&gt;{ n1.a(); }).start();
+     new Thread(()-&gt;{ n1.b(); }).start();
+}
+</code></pre>
+<ul>
+<li>情况 7：2 1s 后 1</li>
+</ul>
+<pre><code>class Number{
+     public static synchronized void a() {
+        sleep(1);
+         log.debug("1");
+     }
+     public synchronized void b() {
+         log.debug("2");
+     }
+}
+//对象锁 b方法获得
+public static void main(String[] args) {
+     Number n1 = new Number();
+    Number n2 = new Number();
+     new Thread(()-&gt;{ n1.a(); }).start();
+     new Thread(()-&gt;{ n2.b(); }).start();
+}
+</code></pre>
+<ul>
+<li>情况 8：1s 后 12， 或 2 1s 后 1</li>
+</ul>
+<pre><code>class Number{
+     public static synchronized void a() {
+        sleep(1);
+         log.debug("1");
+     }
+     public static synchronized void b() {
+         log.debug("2");
+     }
+}
+//对象锁 b方法获得
+public static void main(String[] args) {
+     Number n1 = new Number();
+    Number n2 = new Number();
+     new Thread(()-&gt;{ n1.a(); }).start();
+     new Thread(()-&gt;{ n2.b(); }).start();
+}
+</code></pre>
+<h2 id="变量的线程安全分析"><a href="#变量的线程安全分析" class="headerlink" title="变量的线程安全分析"></a>变量的线程安全分析</h2><h3 id="成员变量和静态变量的线程安全分析"><a href="#成员变量和静态变量的线程安全分析" class="headerlink" title="成员变量和静态变量的线程安全分析"></a>成员变量和静态变量的线程安全分析</h3><ul>
+<li><p>如果它们没有共享，则线程安全。</p>
+</li>
+<li><p>如果它们被共享了，根据它们的状态是否能够改变，又分两种情况：</p>
+<ul>
+<li>如果只有读操作，则线程安全；</li>
+<li>如果有读写操作，则这段代码是临界区，需要考虑线程安全。</li>
+</ul>
+</li>
+</ul>
+<h3 id="局部变量线程安全分析"><a href="#局部变量线程安全分析" class="headerlink" title="局部变量线程安全分析"></a>局部变量线程安全分析</h3><p><strong>局部变量是否线程安全？</strong></p>
+<ul>
+<li><p>局部变量是线程安全的。</p>
+</li>
+<li><p>但局部变量引用的对象则未必：</p>
+<ul>
+<li>如果该对象没有逃离方法的作用范围，它是线程安全的；</li>
+<li>如果该对象逃离方法的作用范围，需要考虑线程安全。</li>
+</ul>
+</li>
+</ul>
+<p><strong>线程安全的情况</strong></p>
+<p>局部变量【局部变量被初始化为基本数据类型】是安全的，示例如下：</p>
+<pre><code>public static void test1() {
+     int i = 10;
+     i++;
+}
+</code></pre>
+<p>每个线程调用 test1 () 方法时，局部变量会在每个线程的栈帧内存中被创建多份，是彼此隔离的，因此不存在共享。</p>
+<p><strong>线程不安全的情况</strong></p>
+<p>如果局部变量引用的对象逃离方法的范围，那么要考虑线程安全的，分析如下代码：</p>
+<pre><code>public class Test {
+
+    public static void main(String[] args) {
+        UnsafeTest unsafeTest = new UnsafeTest();
+        for(int i = 0; i &lt; 10; i++) {
+            new Thread(() -&gt; {
+                unsafeTest.method1();
+            }, "t" + i).start();
+        }
+    }
+
+}
+
+
+class UnsafeTest {
+
+    List&lt;Integer&gt; list = new ArrayList&lt;&gt;();
+
+    public void method1() {
+        for (int i = 0; i &lt; 200; i++) {
+            method2();
+            method3();
+        }
+    }
+
+    public void method2() {
+        list.add(1);
+    }
+
+    public void method3() {
+        list.remove(0);
+    }
+
+}
+</code></pre>
+<p><strong>不安全原因分析</strong></p>
+<p>无论哪个线程中的 method2 和 method3 引用的都是同一个对象中的 list 成员变量：一个 ArrayList ，在添加一个元素的时候，它可能会有两步来完成：</p>
+<ol>
+<li><p>第一步，在 arrayList [Size] 的位置存放此元素； 第二步增大 Size 的值。</p>
+</li>
+<li><p>在单线程运行的情况下，如果 Size = 0，添加一个元素后，此元素在位置 0，而且 Size=1；而如果是在多线程情下，比如有两个线程，线程 一先将元素存放在位置 0，但是此时发生上下文切换，线程 B 得到运行的机会，线程 B 也向此 ArrayList 添加元素，因为此时 Size 仍等于 0 ，所以线程二也将元素存放在位置 0，然后线程一和线程二都继续运行，都增加 Size 的值。 那好，现在看看 ArrayList 的情况，元素实际上只有一个，存放在位置 0，而 Size 却等于 2。这就是线程不安全了。</p>
+</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/20200307215429-139261.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/20210129145229674.png"></p>
+<p><strong>解决方法</strong></p>
+<p>可以将 list 修改成局部变量，然后将 list 作为引用传入方法中，因为局部变量是每个线程私有的，不会出现共享问题，那么就不会有上述问题了。修改的代码如下：</p>
+<pre><code>class SafeTest {
+
+    public void method1() {
+ 
+        List&lt;Integer&gt; list = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; 200; i++) {
+            method2(list);
+            method3(list);
+        }
+    }
+
+    public void method2(List&lt;Integer&gt; list) {
+        list.add(1);
+    }
+
+    public void method3(List&lt;Integer&gt; list) {
+        list.remove(0);
+    }
+}
+</code></pre>
+<p><strong>思考 private 或 final 的重要性</strong></p>
+<p>在上诉代码中，其实存在线程安全的问题，因为 method2，method3 方法都是用 public 声明的，如果一个类继承 SafeTest 类，对 method2，method3 方法进行了重写，比如重写 method3 方法，代码如下：</p>
+<pre><code>class UnsafeSubTest extends UnsafeTest {
+
+    @Override
+    public void method3(List&lt;Integer&gt; list) {
+        new Thread(() -&gt; {
+            list.remove(0);
+        }).start();
+    }
+}
+</code></pre>
+<p>可以看到重写的方法中又使用到了线程，当主线程和重写的 method3 方法的线程同时存在，此时 list 就是这两个线程的共享资源了，就会出现线程安全问题，我们可以用 private 访问修饰符解决此问题，代码实现如下：</p>
+<pre><code>class ThreadSafe {
+    public final void method1(int loopNumber) {
+        ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; loopNumber; i++) {
+            method2(list);
+            method3(list);
+        }
+    }
+    private void method2(ArrayList&lt;String&gt; list) {
+        list.add("1");
+    }
+    private void method3(ArrayList&lt;String&gt; list) {
+        list.remove(0);
+    }
+}
+class ThreadSafeSubClass extends ThreadSafe{
+    @Override
+    public void method3(ArrayList&lt;String&gt; list) {
+        new Thread(() -&gt; {
+            list.remove(0);
+        }).start();
+    }
+}
+</code></pre>
+<h3 id="常见线程安全类"><a href="#常见线程安全类" class="headerlink" title="常见线程安全类"></a>常见线程安全类</h3><ul>
+<li>String</li>
+<li>StringBuﬀer</li>
+<li>Random</li>
+<li>Vector （List 的线程安全实现类）</li>
+<li>Hashtable （Hash 的线程安全实现类）</li>
+<li>java.util.concurrent 包下的类</li>
+</ul>
+<p>这里说它们是线程安全的是指：多个线程调用它们同一个实例的某个方法时，是线程安全的。如：</p>
+<pre><code>Hashtable table = new Hashtable();
+new Thread(()-&gt;{
+     table.put("key1", "value1");
+}).start();
+new Thread(()-&gt;{
+     table.put("key2", "value2");
+}).start();
+</code></pre>
+<p><strong>线程安全类方法的组合</strong></p>
+<p>但注意它们多个方法的组合不是原子的，看如下代码：</p>
+<pre><code>Hashtable table = new Hashtable();
+// 线程1，线程2
+if( table.get("key") == null) {
+ table.put("key", value);
+}
+</code></pre>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/2021012916122421.png"></p>
+<p>如上图所示，当使用方法组合时，出现了线程安全问题，当线程 1 执行完 get (“key”) ，这是一个原子操作没问题，但是在 get (“key”) == null 比较时，如果线程的时间片用完了，线程 2 获取时间片执行了 get (“key”) == null 操作，然后进行 put (“key”, “v2”) 操作，结束后，线程 1 被分配 cpu 时间片继续执行，执行 put 操作就会出现线程安全问题。</p>
+<p><strong>不可变类的线程安全</strong></p>
+<p>String 和 Integer 类都是不可变的类，因为其类内部状态是不可改变的，因此它们的方法都是线程安全的。疑问是 String 有 replace，substring 等方法可以改变值啊，其实调用这些方法返回的已经是一个新创建的对象了！</p>
+<pre><code>public String substring(int beginIndex, int endIndex) {
+        if (beginIndex &lt; 0) {
+            throw new StringIndexOutOfBoundsException(beginIndex);
+        }
+        if (endIndex &gt; value.length) {
+            throw new StringIndexOutOfBoundsException(endIndex);
+        }
+        int subLen = endIndex - beginIndex;
+        if (subLen &lt; 0) {
+            throw new StringIndexOutOfBoundsException(subLen);
+        }
+        return ((beginIndex == 0) &amp;&amp; (endIndex == value.length)) ? this
+                : new String(value, beginIndex, subLen); // 新建一个对象，然后返回，没有修改等操作，是线程安全的。
+    }
+</code></pre>
+<p><strong>示例分析 - 是否线程安全</strong></p>
+<p>分析线程是否安全，先对类的成员变量，类变量，局部变量进行考虑，如果变量会在各个线程之间共享，那么就得考虑线程安全问题了，如果变量 A 引用的是线程安全类的实例，并且只调用该线程安全类的一个方法，那么该变量 A 是线程安全的的。</p>
+<blockquote>
+<p>示例一：此类不是线程安全的，MyAspect 切面类只有一个实例，成员变量 start 会被多个线程同时进行读写操作。</p>
+</blockquote>
+<pre><code>@Aspect
+@Component
+public class MyAspect {
+        // 是否安全？
+        private long start = 0L;
+
+        @Before("execution(* *(..))")
+        public void before() {
+            start = System.nanoTime();
+        }
+
+        @After("execution(* *(..))")
+        public void after() {
+            long end = System.nanoTime();
+            System.out.println("cost time:" + (end-start));
+        }
+    }
+</code></pre>
+<blockquote>
+<p>示例二：MyServlet、UserServiceImpl、UserDaoImpl 类都只有一个实例，UserDaoImpl 类中没有成员变量，update 方法里的变量引用的对象不是线程共享的，所以是线程安全的；UserServiceImpl 类中只有一个线程安全的 UserDaoImpl 类的实例，那么 UserServiceImpl 类也是线程安全的，同理 MyServlet 也是线程安全的。</p>
+</blockquote>
+<pre><code>public class MyServlet extends HttpServlet {
+ // 是否安全
+     private UserService userService = new UserServiceImpl();
+
+     public void doGet(HttpServletRequest request, HttpServletResponse response) {
+         userService.update(...);
+     }
+}
+public class UserServiceImpl implements UserService {
+     // 是否安全
+     private UserDao userDao = new UserDaoImpl();
+     public void update() {
+         userDao.update();
+     }
+}
+public class UserDaoImpl implements UserDao {
+     public void update() {
+     String sql = "update user set password = ? where username = ?";
+     // 是否安全
+     try (Connection conn = DriverManager.getConnection("","","")){
+         // ...
+     } catch (Exception e) {
+     // ...
+     }
+  }
+}
+</code></pre>
+<blockquote>
+<p>示例三：跟示例二大体相似，UserDaoImpl 类中有成员变量，那么多个线程可以对成员变量 conn 同时进行操作，故是不安全的。</p>
+</blockquote>
+<pre><code>public class MyServlet extends HttpServlet {
+    // 是否安全
+    private UserService userService = new UserServiceImpl();
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response) {
+        userService.update(...);
+    }
+}
+public class UserServiceImpl implements UserService {
+    // 是否安全
+    private UserDao userDao = new UserDaoImpl();
+    public void update() {
+        userDao.update();
+    }
+}
+public class UserDaoImpl implements UserDao {
+    // 是否安全
+    private Connection conn = null;
+    public void update() throws SQLException {
+        String sql = "update user set password = ? where username = ?";
+        conn = DriverManager.getConnection("","","");
+        // ...
+        conn.close();
+    }
+}
+</code></pre>
+<blockquote>
+<p>示例四：跟示例三大体相似，UserServiceImpl 类的 update 方法中 UserDao 是作为局部变量存在的，所以每个线程访问的时候都会新建有一个 UserDao 对象，新建的对象是线程独有的，所以是线程安全的。</p>
+</blockquote>
+<pre><code>public class MyServlet extends HttpServlet {
+    // 是否安全
+    private UserService userService = new UserServiceImpl();
+    public void doGet(HttpServletRequest request, HttpServletResponse response) {
+        userService.update(...);
+    }
+}
+public class UserServiceImpl implements UserService {
+    public void update() {
+        UserDao userDao = new UserDaoImpl();
+        userDao.update();
+    }
+}
+public class UserDaoImpl implements UserDao {
+    // 是否安全
+    private Connection = null;
+    public void update() throws SQLException {
+        String sql = "update user set password = ? where username = ?";
+        conn = DriverManager.getConnection("","","");
+        // ...
+        conn.close();
+    }
+}
+</code></pre>
+<blockquote>
+<p>示例五：</p>
+</blockquote>
+<p>public abstract class Test {<br>    public void bar() {<br>        // 是否安全<br>        SimpleDateFormat sdf = new SimpleDateFormat(“yyyy-MM-dd HH:mm:ss”);<br>        foo(sdf);<br>    }<br>    public abstract foo(SimpleDateFormat sdf);<br>    public static void main(String[] args) {<br>        new Test().bar();<br>    }<br>}<br>其中 foo 的行为是不确定的，可能导致不安全的发生，被称之为外星方法，因为 foo 方法可以被重写，导致线程不安全。在 String 类中就考虑到了这一点，String 类是 final 关键字声明的，子类不能重写它的方法。</p>
+<pre><code>public void foo(SimpleDateFormat sdf) {
+    String dateStr = "1999-10-11 00:00:00";
+    for (int i = 0; i &lt; 20; i++) {
+        new Thread(() -&gt; {
+            try {
+                sdf.parse(dateStr);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+}
+</code></pre>
+<h2 id="案例分析-—-卖票"><a href="#案例分析-—-卖票" class="headerlink" title="案例分析 — 卖票"></a>案例分析 — 卖票</h2><pre><code>import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Vector;
+
+
+public class ExerciseSell {
+    public static void main(String[] args) throws InterruptedException {
+        // 模拟多人买票
+        TicketWindow window = new TicketWindow(1000);
+
+        // 所有线程的集合
+        List&lt;Thread&gt; threadList = new ArrayList&lt;&gt;();
+        // 卖出的票数统计
+        List&lt;Integer&gt; amountList = new Vector&lt;&gt;();
+        for (int i = 0; i &lt; 2000; i++) {
+            Thread thread = new Thread(() -&gt; {
+                // 买票
+                int amount = window.sell(random(5));
+                // 统计买票数
+                amountList.add(amount);
+            });
+            threadList.add(thread);
+            thread.start();
+        }
+
+        for (Thread thread : threadList) {
+            thread.join();
+        }
+
+        // 统计卖出的票数和剩余票数
+        log.debug("余票：{}",window.getCount());
+        log.debug("卖出的票数：{}", amountList.stream().mapToInt(i-&gt; i).sum());
+    }
+
+    // Random 为线程安全
+    static Random random = new Random();
+
+    // 随机 1~5
+    public static int random(int amount) {
+        return random.nextInt(amount) + 1;
+    }
+}
+
+// 售票窗口
+class TicketWindow {
+    private int count;
+
+    public TicketWindow(int count) {
+        this.count = count;
+    }
+
+    // 获取余票数量
+    public int getCount() {
+        return count;
+    }
+
+    // 售票
+    public synchronized int sell(int amount) {
+        if (this.count &gt;= amount) {
+            this.count -= amount;
+            return amount;
+        } else {
+            return 0;
+        }
+    }
+}
+</code></pre>
+<h2 id="Monitor-概念"><a href="#Monitor-概念" class="headerlink" title="Monitor 概念"></a>Monitor 概念</h2><h3 id="Java-对象头"><a href="#Java-对象头" class="headerlink" title="Java 对象头"></a>Java 对象头</h3><p>以 32 位虚拟机为例，普通对象的对象头结构如下，其中的 Klass Word 为指针，指向对应的 Class 对象。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/20200308223951-617147.png"></p>
+<p><strong>数组对象</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/20210130134453728.png"></p>
+<p><strong>其中 Mark Word 结构为：</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/20210130134641162.png"></p>
+<p>所以一个对象的结构如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/20200308224345-655905.png"></p>
+<h3 id="Monitor-原理"><a href="#Monitor-原理" class="headerlink" title="Monitor 原理"></a>Monitor 原理</h3><p>Monitor 被翻译为监视器或者说管程，每个 java 对象都可以关联一个 Monitor，如果使用 synchronized 给对象上锁（重量级），该对象头的 Mark Word 中就被设置为指向 Monitor 对象的指针。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/20210130135025351.png"></p>
+<ul>
+<li><p>刚开始时 Monitor 中的 Owner 为 null；</p>
+</li>
+<li><p>当 Thread-2 执行 synchronized (obj){} 代码时就会将 Monitor 的所有者 Owner 设置为 Thread-2，上锁成功，Monitor 中同一时刻只能有一个 Owner；</p>
+</li>
+<li><p>当 Thread-2 占据锁时，如果线程 Thread-3 ，Thread-4 也来执行 synchronized (obj){} 代码，就会进入 EntryList（阻塞队列） 中变成 BLOCKED（阻塞） 状态；</p>
+</li>
+<li><p>Thread-2 执行完同步代码块的内容，然后唤醒 EntryList 中等待的线程来竞争锁，竞争时是非公平的；</p>
+</li>
+<li><p>图中 WaitSet 中的 Thread-0，Thread-1 是之前获得过锁，但条件不满足进入 WAITING 状态的线程，后面讲 wait-notify 时会分析。</p>
+</li>
+</ul>
+<blockquote>
+<p>注意：synchronized 必须是进入同一个对象的 monitor 才有上述的效果，不加 synchronized 的对象不会关联监视器，不遵从以上规则。</p>
+</blockquote>
+<h2 id="wait-和-notify"><a href="#wait-和-notify" class="headerlink" title="wait 和 notify"></a>wait 和 notify</h2><ul>
+<li><p>obj.wait () 让进入 object 监视器的线程到 waitSet 等待。</p>
+</li>
+<li><p>obj.notify () 在 object 上正在 waitSet 等待的线程中挑一个唤醒。</p>
+</li>
+<li><p>obj.notifyAll () 让 object 上正在 waitSet 等待的线程全部唤醒。</p>
+</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/20210130214454663.png"></p>
+<ul>
+<li><p>锁对象调用 wait 方法（obj.wait），就会使当前线程进入 WaitSet 中，变为 WAITING 状态。</p>
+</li>
+<li><p>处于 BLOCKED 和 WAITING 状态的线程都为阻塞状态，CPU 都不会分给他们时间片。但是有所区别：</p>
+<ul>
+<li><p>BLOCKED 状态的线程是在竞争对象时，发现 Monitor 的 Owner 已经是别的线程了，此时就会进入 EntryList 中，并处于 BLOCKED 状态。</p>
+</li>
+<li><p>WAITING 状态的线程是获得了对象的锁，但是自身因为某些原因需要进入阻塞状态时，锁对象调用了 wait 方法而进入了 WaitSet 中，处于 WAITING 状态。</p>
+</li>
+<li><p>BLOCKED 状态的线程会在锁被释放的时候被唤醒，但是处于 WAITING 状态的线程只有被锁对象调用了 notify 方法 (obj.notify/obj.notifyAll)，才会被唤醒。</p>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>注：只有当对象加锁以后，才能调用 wait 和 notify 方法。</p>
+</blockquote>
+<h3 id="Wait-与-Sleep-的区别"><a href="#Wait-与-Sleep-的区别" class="headerlink" title="Wait 与 Sleep 的区别"></a>Wait 与 Sleep 的区别</h3><ul>
+<li><p>Sleep 是 Thread 类的静态方法，Wait 是 Object 的方法，Object 又是所有类的父类，所以所有类都有 Wait 方法。</p>
+</li>
+<li><p>Sleep 在阻塞的时候不会释放锁，而 Wait 在阻塞的时候会释放锁，它们都会释放 CPU 资源。</p>
+</li>
+<li><p>Sleep 不需要与 synchronized 一起使用，而 Wait 需要与 synchronized 一起使用（对象被锁以后才能使用）</p>
+</li>
+<li><p>使用 wait 一般需要搭配 notify 或者 notifyAll 来使用，不然会让线程一直等待。</p>
+</li>
+</ul>
+<h3 id="优雅地使用-wait-notify"><a href="#优雅地使用-wait-notify" class="headerlink" title="优雅地使用 wait/notify"></a>优雅地使用 wait/notify</h3><p><strong>什么时候适合使用 wait？</strong></p>
+<ul>
+<li>当线程不满足某些条件，需要暂停运行时，可以使用 wait 。这样会将对象的锁释放，让其他线程能够继续运行。如果此时使用 sleep，会导致所有线程都进入阻塞，导致所有线程都没法运行，直到当前线程 sleep 结束后，运行完毕，才能得到执行。</li>
+</ul>
+<p><strong>使用 wait/notify 需要注意什么？</strong></p>
+<ul>
+<li>当有多个线程在运行时，对象调用了 wait 方法，此时这些线程都会进入 WaitSet 中等待。如果这时使用了 notify 方法，可能会造成虚假唤醒（唤醒的不是满足条件的等待线程），这时就需要使用 notifyAll 方法。</li>
+</ul>
+<pre><code>synchronized (lock) {
+    while(//不满足条件，一直等待，避免虚假唤醒) {
+        lock.wait();
+    }
+    //满足条件后再运行
+}
+
+synchronized (lock) {
+    //唤醒所有等待线程
+    lock.notifyAll();
+}
+</code></pre>
+<p><strong>示例</strong></p>
+<pre><code>@Slf4j
+public class TestWait {
+    static final Object room = new Object();
+    static boolean hasCigarette = false;
+    static boolean hasTakeout = false;
+    public static void main(String[] args) throws InterruptedException {
+        new Thread(()-&gt;{
+            synchronized (room) {
+                log.debug("有烟吗？[{}]",hasCigarette);
+                if (!hasCigarette) {
+                    log.debug("没烟，歇会");
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                log.debug("有烟没？[{}]",hasCigarette);
+                if (hasCigarette) {
+                    log.debug("可以干活了");
+                }
+            }
+        },"t1").start();
+
+        for (int i = 0; i &lt; 5; i++) {
+            new Thread(() -&gt; {
+                synchronized (room) {
+                    log.debug("可以干活了");
+                }
+            },"其他人").start();
+        }
+
+        Thread.sleep(1000);
+        new Thread(() -&gt; {
+            hasCigarette = true;
+            log.debug("烟来了");
+        },"送烟的").start();
+    }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code>19:26:21.111 [t1] DEBUG com.heu.test.TestWait - 有烟吗？[false]
+19:26:21.123 [t1] DEBUG com.heu.test.TestWait - 没烟，歇会
+19:26:22.116 [送烟的] DEBUG com.heu.test.TestWait - 烟来了
+19:26:23.134 [t1] DEBUG com.heu.test.TestWait - 有烟没？[true]
+19:26:23.134 [t1] DEBUG com.heu.test.TestWait - 可以干活了
+19:26:23.134 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+19:26:23.135 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+19:26:23.135 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+19:26:23.135 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+19:26:23.136 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+</code></pre>
+<ul>
+<li><p>其它干活的线程，都要一直阻塞，效率太低；</p>
+</li>
+<li><p>t1 线程必须睡足 2s 后才能醒来，就算烟提前送到，也无法立刻醒来；</p>
+</li>
+<li><p>加了 synchronized (room) 后，就好比 t1 线程在里面反锁了门睡觉，烟根本没法送进门，而 main 线程没加 synchronized 就好像 main 线程是翻窗户进来的；</p>
+</li>
+<li><p>解决方法，使用 wait - notify 机制。</p>
+</li>
+</ul>
+<p>思考下面的实现行吗，为什么？</p>
+<pre><code>@Slf4j
+public class TestWait {
+    static final Object room = new Object();
+    static boolean hasCigarette = false;
+    static boolean hasTakeout = false;
+    public static void main(String[] args) throws InterruptedException {
+        new Thread(()-&gt;{
+            synchronized (room) {
+                log.debug("有烟吗？[{}]",hasCigarette);
+                if (!hasCigarette) {
+                    log.debug("没烟，歇会");
+                    try {
+                        room.wait(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                log.debug("有烟没？[{}]",hasCigarette);
+                if (hasCigarette) {
+                    log.debug("可以干活了");
+                }
+            }
+        },"t1").start();
+
+        for (int i = 0; i &lt; 5; i++) {
+            new Thread(() -&gt; {
+                synchronized (room) {
+                    log.debug("可以干活了");
+                }
+            },"其他人").start();
+        }
+
+        Thread.sleep(1000);
+        new Thread(() -&gt; {
+            synchronized (room) {
+                hasCigarette = true;
+                log.debug("烟来了");
+                room.notify();
+            }
+           
+        },"送烟的").start();
+    }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code>19:33:01.717 [t1] DEBUG com.heu.test.TestWait - 有烟吗？[false]
+19:33:01.727 [t1] DEBUG com.heu.test.TestWait - 没烟，歇会
+19:33:01.728 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+19:33:01.728 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+19:33:01.729 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+19:33:01.729 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+19:33:01.729 [其他人] DEBUG com.heu.test.TestWait - 可以干活了
+19:33:02.717 [送烟的] DEBUG com.heu.test.TestWait - 烟来了
+19:33:02.717 [t1] DEBUG com.heu.test.TestWait - 有烟没？[true]
+19:33:02.717 [t1] DEBUG com.heu.test.TestWait - 可以干活了
+</code></pre>
+<ul>
+<li>解决了其它干活的线程阻塞的问题；</li>
+<li>但如果有其它线程也在等待条件呢。</li>
+</ul>
+<p>这样呢？</p>
+<pre><code>new Thread(()-&gt;{
+    synchronized (room) {
+        log.debug("有烟吗？[{}]",hasCigarette);
+        if (!hasCigarette) {
+            log.debug("没烟，歇会");
+            try {
+                room.wait(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        log.debug("有烟没？[{}]",hasCigarette);
+        if (hasCigarette) {
+            log.debug("可以干活了");
+        } else {
+            log.debug("没干成活");
+        }
+    }
+},"t1").start();
+
+new Thread(() -&gt; {
+    synchronized (room) {
+        Thread thread = Thread.currentThread();
+        log.debug("外卖送到没？[{}]",hasTakeout);
+        if (!hasTakeout) {
+            log.debug("没外卖，歇会");
+            try {
+                room.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        log.debug("外卖送到没？[{}]",hasTakeout);
+        if (hasTakeout) {
+            log.debug("可以干活了");
+        } else {
+            log.debug("没干成活");
+        }
+    }
+},"t2").start();
+
+new Thread(() -&gt; {
+    synchronized (room) {
+        hasTakeout = true;
+        log.debug("外卖来了");
+        room.notify();
+    }
+
+},"送外卖的").start();
+</code></pre>
+<p>输出：</p>
+<pre><code>19:44:18.155 [t1] DEBUG com.heu.test.TestWait - 有烟吗？[false]
+19:44:18.166 [t1] DEBUG com.heu.test.TestWait - 没烟，歇会
+19:44:18.167 [t2] DEBUG com.heu.test.TestWait - 外卖送到没？[false]
+19:44:18.167 [t2] DEBUG com.heu.test.TestWait - 没外卖，歇会
+19:44:19.165 [送外卖的] DEBUG com.heu.test.TestWait - 外卖来了
+19:44:19.165 [t1] DEBUG com.heu.test.TestWait - 有烟没？[false]
+19:44:19.166 [t1] DEBUG com.heu.test.TestWait - 没干成活
+</code></pre>
+<ul>
+<li><p>notify 只能随机唤醒一个 WaitSet 中的线程，这时如果有其它线程也在等待，那么就可能唤醒不了正确的线程，称之为【虚假唤醒】</p>
+</li>
+<li><p>解决方法，改为 notifyAll。</p>
+</li>
+</ul>
+<p>解决办法：</p>
+<pre><code>new Thread(() -&gt; {
+    synchronized (room) {
+        hasTakeout = true;
+        log.debug("外卖来了");
+        room.notifyAll();
+    }
+
+},"送外卖的").start();
+</code></pre>
+<p>输出：</p>
+<pre><code>19:46:23.330 [t1] DEBUG com.heu.test.TestWait - 有烟吗？[false]
+19:46:23.340 [t1] DEBUG com.heu.test.TestWait - 没烟，歇会
+19:46:23.340 [t2] DEBUG com.heu.test.TestWait - 外卖送到没？[false]
+19:46:23.341 [t2] DEBUG com.heu.test.TestWait - 没外卖，歇会
+19:46:24.338 [送外卖的] DEBUG com.heu.test.TestWait - 外卖来了
+19:46:24.339 [t1] DEBUG com.heu.test.TestWait - 有烟没？[false]
+19:46:24.339 [t1] DEBUG com.heu.test.TestWait - 没干成活
+19:46:24.339 [t2] DEBUG com.heu.test.TestWait - 外卖送到没？[true]
+19:46:24.340 [t2] DEBUG com.heu.test.TestWait - 可以干活了
+</code></pre>
+<ul>
+<li><p>用 notifyAll 仅解决某个线程的唤醒问题，但使用 if + wait 判断仅有一次机会，一旦条件不成立，就没有重新判断的机会了。</p>
+</li>
+<li><p>解决方法，用 while + wait，当条件不成立，再次 wait。</p>
+</li>
+</ul>
+<p>将 if 改为 while：</p>
+<pre><code>while (!hasCigarette) {
+     log.debug("没烟，先歇会！");
+     try {
+         room.wait();
+     } catch (InterruptedException e) {
+         e.printStackTrace();
+     }
+}
+</code></pre>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><ol>
+<li><p>当调用 wait 时，首先需要确保调用了 wait 方法的线程已经持有了对象的锁 (调用 wait 方法的代码片段需要放在 sychronized 块或者时 sychronized 方法中，这样才可以确保线程在调用 wait 方法前已经获取到了对象的锁)。</p>
+</li>
+<li><p>当调用 wait 时，该线程就会释放掉这个对象的锁，然后进入等待状态 (wait set)。</p>
+</li>
+<li><p>当线程调用了 wait 后进入到等待状态时，它就可以等待其他线程调用相同对象的 notify 或者 notifyAll 方法使得自己被唤醒。</p>
+</li>
+<li><p>一旦这个线程被其它线程唤醒之后，该线程就会与其它线程以同开始竞争这个对象的锁 (公平竞争)；只有当该线程获取到对象的锁后，线程才会继续往下执行。</p>
+</li>
+<li><p>当调用对象的 notify 方法时，他会随机唤醒对象等待集合 (wait set) 中的任意一个线程，当某个线程被唤醒后，它就会与其它线程一同竞争对象的锁。</p>
+</li>
+<li><p>当调用对象的 notifyAll 方法时，它会唤醒该对象等待集合 (wait set) 中的所有线程，这些线程被唤醒后，又会开始竞争对象的锁。</p>
+</li>
+<li><p>在某一时刻，只有唯一的一个线程能拥有对象的锁。</p>
+</li>
+</ol>
+<p>同步模式之保护性暂停<br>定义<br>即 Guarded Suspension，用在一个线程等待另一个线程的执行结果。</p>
+<p>有一个结果需要从一个线程传递到另一个线程，让他们关联同一个 GuardedObject。</p>
+<p>如果有结果不断从一个线程到另一个线程那么可以使用消息队列（见生产者 / 消费者）。</p>
+<p>JDK 中，join 、Future 的实现，采用的就是此模式。</p>
+<p>单任务及多任务版 GuardedObject 如下图所示：</p>
+<p>image-20210605200231671</p>
+<p>在这里插入图片描述</p>
+<p>实现<br>一个线程等待另一个线程的执行结果（带超时）</p>
+<p>@Slf4j<br>public class GuardedObjectV2 {<br>    private Object response;<br>    private final Object lock = new Object();</p>
+<pre><code>public Object get(long millis) {
+    synchronized (lock) {
+        long begin = System.currentTimeMillis();
+        long timePassed = 0;
+        while (response == null) {
+            long waitTime = millis - timePassed;
+            log.debug("waitTime: {}", waitTime);
+            if (waitTime &lt;= 0) {
+                log.debug("break..");
+            }
+            try {
+                lock.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            timePassed=System.currentTimeMillis()-begin;
+            log.debug("timePassed: {}, object is null {}",
+                    timePassed, response == null);
+        }
+        return response;
+    }
+}
+
+public void complete(Object response) {
+    synchronized (lock) {
+        this.response = response;
+        log.debug("notify..");
+        lock.notifyAll();
+    }
+}
+</code></pre>
+<p>}</p>
+<p>@Slf4j<br>public class GuardedObjectTest {<br>    public static void main(String[] args) {<br>        GuardedObjectV2 v2 = new GuardedObjectV2();<br>        new Thread(()-&gt;{<br>            try {<br>                Thread.sleep(1000);<br>            } catch (InterruptedException e) {<br>                e.printStackTrace();<br>            }<br>            v2.complete(null);<br>            try {<br>                Thread.sleep(1000);<br>            } catch (InterruptedException e) {<br>                e.printStackTrace();<br>            }<br>            v2.complete(Arrays.asList(“a”, “b”, “c”));<br>        }).start();</p>
+<pre><code>    Object response = v2.get(2500);
+    if (response != null) {
+        log.debug("get response: [{}] lines", ((List&lt;String&gt;) response).size());
+    } else {
+        log.debug("can't get response");
+    }
+}
+</code></pre>
+<p>}</p>
+<p>输出：</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>20:31:46.262 [main] DEBUG com.heu.test.GuardedObjectV2 - waitTime: 2500<br>20:31:47.258 [Thread-0] DEBUG com.heu.test.GuardedObjectV2 - notify..<br>20:31:47.258 [main] DEBUG com.heu.test.GuardedObjectV2 - timePassed: 1002, object is null true<br>20:31:47.258 [main] DEBUG com.heu.test.GuardedObjectV2 - waitTime: 1498<br>20:31:48.272 [Thread-0] DEBUG com.heu.test.GuardedObjectV2 - notify..<br>20:31:48.272 [main] DEBUG com.heu.test.GuardedObjectV2 - timePassed: 2016, object is null false<br>20:31:48.273 [main] DEBUG com.heu.test.GuardedObjectTest - get response: [3] lines<br>多任务版 GuardedObject</p>
+<p>@Slf4j<br>public class Code_23_Test {</p>
+<pre><code>public static void main(String[] args) {
+
+    for (int i = 0; i &lt; 3; i++) {
+        new People().start();
+    }
+
+    try {
+        Thread.sleep(1000);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+
+    for(Integer id : Mailboxes.getIds()) {
+        new Postman(id, "内容 " + id).start();
+    }
+}
+</code></pre>
+<p>}</p>
+<p>@Slf4j(topic = “c.People”)<br>class People extends Thread {</p>
+<pre><code>@Override
+public void run() {
+    GuardedObject guardedObject = Mailboxes.createGuardedObject();
+    log.info("收信的为 id: {}", guardedObject.getId());
+    Object o = guardedObject.get(5000);
+    log.info("收到信的 id: {}, 内容: {}", guardedObject.getId(), o);
+}
+</code></pre>
+<p>}</p>
+<p>@Slf4j(topic = “c.Postman”)<br>class Postman extends Thread {</p>
+<pre><code>private int id;
+private String mail;
+
+public Postman(int id, String mail) {
+    this.id = id;
+    this.mail = mail;
+}
+
+@Override
+public void run() {
+    GuardedObject guardedObject = Mailboxes.getGuardedObject(id);
+    log.info("送信的 id: {}, 内容: {}", id, mail);
+    guardedObject.complete(mail);
+}
+</code></pre>
+<p>}</p>
+<p>class Mailboxes {</p>
+<pre><code>private static int id = 1;
+private static Map&lt;Integer, GuardedObject&gt; boxes = new Hashtable&lt;&gt;();
+
+public static synchronized int generateId() {
+    return id++;
+}
+
+// 用户会进行投信
+public static GuardedObject createGuardedObject() {
+    GuardedObject guardedObject = new GuardedObject(generateId());
+    boxes.put(guardedObject.getId(), guardedObject);
+    return guardedObject;
+}
+
+// 派件员会派发信
+public static GuardedObject getGuardedObject(int id) {
+    return boxes.remove(id);
+}
+
+public static Set&lt;Integer&gt; getIds() {
+    return boxes.keySet();
+}
+</code></pre>
+<p>}</p>
+<p>class GuardedObject {</p>
+<pre><code>private int id;
+
+public GuardedObject(int id) {
+    this.id = id;
+}
+
+public int getId() {
+    return this.id;
+}
+
+private Object response;
+
+// 优化等待时间
+public Object get(long timeout) {
+    synchronized (this) {
+        long begin = System.currentTimeMillis();
+        long passTime = 0;
+        while (response == null) {
+            long waitTime = timeout - passTime; // 剩余等待时间
+            if(waitTime &lt;= 0) {
+                break;
+            }
+            try {
+                this.wait(waitTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            passTime = System.currentTimeMillis() - begin;
+        }
+        return response;
+    }
+}
+
+public void complete(Object response) {
+    synchronized (this) {
+        this.response = response;
+        this.notify();
+    }
+}
+</code></pre>
+<p>}<br>输出：</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10:35:05.689 c.People [Thread-1] - 开始收信 id:3<br>10:35:05.689 c.People [Thread-2] - 开始收信 id:1<br>10:35:05.689 c.People [Thread-0] - 开始收信 id:2<br>10:35:06.688 c.Postman [Thread-4] - 送信 id:2, 内容:内容2<br>10:35:06.688 c.Postman [Thread-5] - 送信 id:1, 内容:内容1<br>10:35:06.688 c.People [Thread-0] - 收到信 id:2, 内容:内容2<br>10:35:06.688 c.People [Thread-2] - 收到信 id:1, 内容:内容1<br>10:35:06.688 c.Postman [Thread-3] - 送信 id:3, 内容:内容3<br>10:35:06.689 c.People [Thread-1] - 收到信 id:3, 内容:内容3<br>异步模式之生产者 / 消费者<br>定义<br>与前面的保护性暂停中的 GuardObject 不同，不需要产生结果和消费结果的线程一一对应。</p>
+<p>消费队列可以用来平衡生产和消费的线程资源。</p>
+<p>生产者仅负责产生结果数据，不关心数据该如何处理，而消费者专心处理结果数据。</p>
+<p>消息队列是有容量限制的，满时不会再加入数据，空时不会再消耗数据。</p>
+<p>JDK 中各种阻塞队列，采用的就是这种模式。</p>
+<p>“异步 “的意思就是生产者产生消息之后消息没有被立刻消费，而 “同步模式” 中，消息在产生之后被立刻消费了。</p>
+<p>在这里插入图片描述</p>
+<p>实现</p>
+<p>@Slf4j(topic = “c.TestProducerConsumer”)<br>public class TestProducerConsumer {<br>    public static void main(String[] args) {<br>        MessageQueue messageQueue = new MessageQueue(2);<br>        for (int i = 0; i &lt; 4; i++) {<br>            int id = i;<br>            new Thread(() -&gt; {<br>                try {<br>                    log.debug(“download…”);<br>                    List<string> response = Downloader.download();<br>                    log.debug(“try put message({})”, id);<br>                    messageQueue.put(new Message(id, response));<br>                } catch (IOException e) {<br>                    e.printStackTrace();<br>                }<br>            }, “生产者” + i).start();<br>        }</string></p>
+<pre><code>    new Thread(() -&gt; {
+        while (true) {
+            Message message = messageQueue.take();
+            List&lt;String&gt; response = (List&lt;String&gt;) message.getMessage();
+            log.debug("take message({}): [{}] lines", message.getId(), response.size());
+        }
+
+    }, "消费者").start();
+}
+</code></pre>
+<p>}</p>
+<p>class Message {<br>    private int id;<br>    private Object message;</p>
+<pre><code>public Message(int id, Object message) {
+    this.id = id;
+    this.message = message;
+}
+
+public int getId() {
+    return id;
+}
+
+public Object getMessage() {
+    return message;
+}
+</code></pre>
+<p>}</p>
+<p>@Slf4j(topic = “c.MessageQueue”)<br>class MessageQueue {<br>    private LinkedList<message> queue;<br>    private int capacity;</message></p>
+<pre><code>public MessageQueue(int capacity) {
+    this.capacity = capacity;
+    queue = new LinkedList&lt;&gt;();
+}
+
+public Message take() {
+    synchronized (queue) {
+        while (queue.isEmpty()) {
+            log.debug("没货了, wait");
+            try {
+                queue.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        Message message = queue.removeFirst();
+        queue.notifyAll();
+        return message;
+    }
+}
+
+public void put(Message message) {
+    synchronized (queue) {
+        while (queue.size() == capacity) {
+            log.debug("库存已达上限, wait");
+            try {
+                queue.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        queue.addLast(message);
+        queue.notifyAll();
+    }
+}
+</code></pre>
+<p>}<br>join 原理<br>调用者轮询检查线程 alive 状态。</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>t1.join();<br>//等价于下面的代码<br>synchronized (t1) {<br>     // 调用者线程进入 t1 的 waitSet 等待, 直到 t1 运行结束<br>     while (t1.isAlive()) {<br>         t1.wait(0);<br>     }<br>}<br>park &amp; unpark<br>基本使用<br>park &amp; unpark 是 LockSupport 线程通信工具类的静态方法。</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>// 暂停当前线程<br>LockSupport.park();<br>// 恢复某个线程的运行<br>LockSupport.unpark;</p>
+<p>@Slf4j<br>public class TestPark {<br>    public static void main(String[] args) throws InterruptedException {<br>        Thread t1=new Thread(() -&gt; {<br>            log.debug(“start…”);<br>            try {<br>                Thread.sleep(1000);<br>                log.debug(“park…”);<br>                LockSupport.park();<br>                log.debug(“resume..”);<br>            } catch (InterruptedException e) {<br>                e.printStackTrace();<br>            }<br>        },”t1”);<br>        t1.start();<br>        Thread.sleep(2000);<br>        log.debug(“unpark…”);<br>        LockSupport.unpark(t1);<br>    }<br>}<br>输出：</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>20:54:15.719 [t1] DEBUG com.heu.test.TestPark - start…<br>20:54:16.735 [t1] DEBUG com.heu.test.TestPark - park…<br>20:54:17.723 [main] DEBUG com.heu.test.TestPark - unpark…<br>20:54:17.724 [t1] DEBUG com.heu.test.TestPark - resume..<br>特点<br>与 Object 的 wait &amp; notify 相比：</p>
+<p>wait，notify 和 notifyAll 必须配合 Object Monitor 一起使用，而 park，unpark 不必；</p>
+<p>park &amp; unpark 是以线程为单位来【阻塞】和【唤醒】线程，而 notify 只能随机唤醒一个等待线程，notifyAll 是唤醒所有等待线程，就不那么【精确】；</p>
+<p>park &amp; unpark 可以先 unpark，而 wait &amp; notify 不能先 notify。</p>
+<p>park unpark 原理<br>每个线程都有自己的一个 Parker 对象，由三部分组成 _counter， _cond 和 _mutex。</p>
+<p>打个比喻，线程就像一个旅人，Parker 就像他随身携带的背包，条件变量 _ cond 就好比背包中的帐篷。_counter 就好比背包中的备用干粮（0 为耗尽，1 为充足）；<br>调用 park 就是要看需不需要停下来歇息：<br>如果备用干粮耗尽，那么钻进帐篷歇息；<br>如果备用干粮充足，那么不需停留，继续前进。<br>调用 unpark，就好比令干粮充足：<br>如果这时线程还在帐篷，就唤醒让他继续前进；<br>如果这时线程还在运行，那么下次它调用 park 时，仅是消耗掉备用干粮，不需停留继续前进；<br>因为背包空间有限，多次调用 unpark 仅会补充一份备用干粮。<br>先调用 park 再调用 upark 的过程：</p>
+<p>先调用 park：</p>
+<p>当前线程调用 Unsafe.park () 方法；<br>检查 _counter ，本情况为 0，这时获得 _mutex 互斥锁 (mutex 对象有个等待队列 _cond)；<br>线程进入 _cond 条件变量阻塞；<br>设置 _counter = 0。</p>
+<p>在这里插入图片描述<br>调用 upark：</p>
+<p>调用 Unsafe.unpark (Thread_0) 方法，设置 _counter 为 1；<br>唤醒 _cond 条件变量中的 Thread_0；<br>Thread_0 恢复运行；<br>设置 _counter 为 0。</p>
+<p>在这里插入图片描述<br>先调用 upark 再调用 park 的过程</p>
+<p>调用 Unsafe.unpark (Thread_0) 方法，设置 _counter 为 1；<br>当前线程调用 Unsafe.park () 方法；<br>检查 _counter ，本情况为 1，这时线程无需阻塞，继续运行；<br>设置 _counter 为 0。</p>
+<p>在这里插入图片描述<br>线程状态转换</p>
+<p>在这里插入图片描述<br>NEW –&gt; RUNNABLE：当调用了 t.start () 方法时，由 NEW –&gt; RUNNABLE。</p>
+<p>RUNNABLE &lt;–&gt; WAITING</p>
+<p>当调用了 t 线程用 synchronized (obj) 获取了对象锁后，调用 obj.wait () 方法时，t 线程从 RUNNABLE –&gt; WAITING。<br>调用 obj.notify () ， obj.notifyAll () ， t.interrupt () 时，会在 WaitSet 等待队列中出现锁竞争，非公平竞争。<br>竞争锁成功，t 线程从 WAITING –&gt; RUNNABLE<br>竞争锁失败，t 线程从 WAITING –&gt; BLOCKED<br>RUNNABLE &lt;–&gt; WAITING</p>
+<p>当前线程调用 t.join () 方法时，当前线程从 RUNNABLE –&gt; WAITING，注意是当前线程在 t 线程对象的监视器上等待。<br>t 线程运行结束，或调用了当前线程的 interrupt () 时，当前线程从 WAITING –&gt; RUNNABLE。<br>RUNNABLE &lt;–&gt; WAITING</p>
+<p>当前线程调用 LockSupport.park () 方法会让当前线程从 RUNNABLE –&gt; WAITING。<br>调用 LockSupport.unpark (目标线程) 或调用了线程 的 interrupt () ，会让目标线程从 WAITING –&gt; RUNNABLE。<br>RUNNABLE &lt;–&gt; TIMED_WAITING</p>
+<p>t 线程用 synchronized (obj) 获取了对象锁后，调用 obj.wait (long n) 方法时，t 线程从 RUNNABLE –&gt; TIMED_WAITING。<br>t 线程等待时间超过了 n 毫秒，或调用 obj.notify () ， obj.notifyAll () ， t.interrupt () 时：<br>竞争锁成功，t 线程从 TIMED_WAITING –&gt; RUNNABLE<br>竞争锁失败，t 线程从 TIMED_WAITING –&gt; BLOCKED<br>RUNNABLE &lt;–&gt; TIMED_WAITING</p>
+<p>当前线程调用 t.join (long n) 方法时，当前线程从 RUNNABLE –&gt; TIMED_WAITING。<br>当前线程等待时间超过了 n 毫秒，或 t 线程运行结束，或调用了当前线程的 interrupt () 时，当前线程从 TIMED_WAITING –&gt; RUNNABLE。<br>RUNNABLE &lt;–&gt; TIMED_WAITING</p>
+<p>当前线程调用 Thread.sleep (long n) ，当前线程从 RUNNABLE –&gt; TIMED_WAITING。<br>当前线程等待时间超过了 n 毫秒，当前线程从 TIMED_WAITING –&gt; RUNNABLE。<br>RUNNABLE &lt;–&gt; TIMED_WAITING</p>
+<p>当前线程调用 LockSupport.parkNanos (long nanos) 或 LockSupport.parkUntil (long millis) 时，当前线 程从 RUNNABLE –&gt; TIMED_WAITING。<br>调用 LockSupport.unpark (目标线程) 或调用了线程 的 interrupt () ，或是等待超时，会让目标线程从 TIMED_WAITING–&gt; RUNNABLE。<br>RUNNABLE &lt;–&gt; BLOCKED</p>
+<p>t 线程用 synchronized (obj) 获取了对象锁时如果竞争失败，从 RUNNABLE –&gt; BLOCKED。<br>持 obj 锁线程的同步代码块执行完毕，会唤醒该对象上所有 BLOCKED 的线程重新竞争，如果其中 t 线程竞争成功，从 BLOCKED –&gt; RUNNABLE ，其它失败的线程仍然 BLOCKED。<br>RUNNABLE &lt;–&gt; TERMINATED</p>
+<p>当前线程所有代码运行完毕，进入 TERMINATED。<br>活跃性<br>定义<br>线程因为某些原因，导致代码一直无法执行完毕，这种的现象叫做活跃性。</p>
+<p>死锁<br>有这样的情况：一个线程需要同时获取多把锁，这时就容易发生死锁。如：t1 线程获得 A 对象锁，接下来想获取 B 对象的锁 t2 线程获得 B 对象锁，接下来想获取 A 对象的锁。</p>
+<p>public static void main(String[] args) {<br>        final Object A = new Object();<br>        final Object B = new Object();<br>        new Thread(()-&gt;{<br>            synchronized (A) {<br>                try {<br>                    Thread.sleep(2000);<br>                } catch (InterruptedException e) {<br>                    e.printStackTrace();<br>                }<br>                synchronized (B) {</p>
+<pre><code>            }
+        }
+    }).start();
+
+    new Thread(()-&gt;{
+        synchronized (B) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            synchronized (A) {
+
+            }
+        }
+    }).start();
+}
+</code></pre>
+<p>发生死锁的必要条件</p>
+<p>互斥条件：在一段时间内，一种资源只能被一个进程所使用。<br>请求和保持条件：进程已经拥有了至少一种资源，同时又去申请其他资源。因为其他资源被别的进程所使用，该进程进入阻塞状态，并且不释放自己已有的资源。<br>不可抢占条件：进程对已获得的资源在未使用完成前不能被强占，只能在进程使用完后自己释放。<br>循环等待条件：发生死锁时，必然存在一个进程 —— 资源的循环链。<br>定位死锁的方法<br>检测死锁可以使用 jconsole 工具；或者使用 jps 定位进程 id，再用 jstack 根据进程 id 定位死锁。</p>
+<p>哲学家就餐问题</p>
+<p>有五位哲学家，围坐在圆桌旁。他们只做两件事，思考和吃饭，思考一会吃口饭，吃完饭后接着思考。吃饭时要用两根筷子吃，桌上共有 5 根筷子，每位哲学家左右手边各有一根筷子。如果筷子被身边的人拿着，自己就得等待。</p>
+<p>当每个哲学家即线程持有一根筷子时，他们都在等待另一个线程释放锁，因此造成了死锁。这种线程没有按预期结束，执行不下去的情况，归类为【活跃性】问题，除了死锁以外，还有活锁和饥饿者两种情况。</p>
+<p>避免死锁的方法</p>
+<p>在线程使用锁对象时，顺序加锁即可避免死锁。</p>
+<p>在这里插入图片描述<br>活锁<br>活锁出现在两个线程互相改变对方的结束条件，谁也无法结束。</p>
+<p>避免活锁的方法：在线程执行时，中途给予不同的间隔时间即可。</p>
+<p>死锁与活锁的区别：</p>
+<p>死锁是因为线程互相持有对象想要的锁，并且都不释放，最后到时线程阻塞，停止运行的现象。</p>
+<p>活锁是因为线程间修改了对方的结束条件，而导致代码一直在运行，却一直运行不完的现象。</p>
+<p>饥饿<br>某些线程因为优先级太低，导致一直无法获得资源的现象。在使用顺序加锁时，可能会出现饥饿现象。</p>
+<p>ReentrantLock<br>相对于 synchronized 它具备如下特点：</p>
+<p>可中断</p>
+<p>可以设置超时时间</p>
+<p>可以设置为公平锁</p>
+<p>支持多个条件变量</p>
+<p>与 synchronized 一样，都支持可重入。</p>
+<p>基本语法：</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>// 获取锁<br>reentrantLock.lock();<br>try {<br>     // 临界区<br>} finally {<br>     // 释放锁<br>     reentrantLock.unlock();<br>}<br>可重入<br>可重入是指同一个线程如果首次获得了这把锁，那么因为它是这把锁的拥有者，因此有权利再次获取这把锁。<br>如果是不可重入锁，那么第二次获得锁时，自己也会被锁挡住。<br>JAVA<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br>33<br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>@Slf4j<br>public class TestReentrantLock {<br>    static ReentrantLock lock = new ReentrantLock();</p>
+<pre><code>public static void main(String[] args) {
+    method1();
+}
+
+public static void method1() {
+    lock.lock();
+    try {
+        log.debug("method1");
+        method2();
+    }finally {
+        lock.unlock();
+    }
+
+}
+
+public static void method2() {
+    lock.lock();
+    try {
+        log.debug("method2");
+        method3();
+    }finally {
+        lock.unlock();
+    }
+
+}
+
+public static void method3() {
+    lock.lock();
+    try {
+        log.debug("method3");
+    }finally {
+        lock.unlock();
+    }
+
+}
+</code></pre>
+<p>}<br>输出：</p>
+<p>JAVA<br>1<br>2<br>3<br>21:49:13.947 [main] DEBUG com.heu.test.TestReentrantLock - method1<br>21:49:13.960 [main] DEBUG com.heu.test.TestReentrantLock - method2<br>21:49:13.960 [main] DEBUG com.heu.test.TestReentrantLock - method3<br>可打断<br>如果某个线程处于阻塞状态，可以调用其 interrupt 方法让其停止阻塞，获得锁失败。简而言之就是：处于阻塞状态的线程，被打断了就不用阻塞了，直接停止运行。</p>
+<p>注意如果是不可中断模式，那么即使使用了 interrupt 也不会让等待中断。</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>public static void main(String[] args) {<br>        ReentrantLock lock = new ReentrantLock();<br>        Thread t1 = new Thread(() -&gt; {<br>            try {<br>                // 加锁，可打断锁<br>                lock.lockInterruptibly();<br>            } catch (InterruptedException e) {<br>                e.printStackTrace();<br>                // 被打断，返回，不再向下执行<br>                return;<br>            }finally {<br>                // 释放锁<br>                lock.unlock();<br>            }</p>
+<pre><code>    });
+
+    lock.lock();
+    try {
+        t1.start();
+        Thread.sleep(1000);
+        // 打断
+        t1.interrupt();
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    } finally {
+        lock.unlock();
+    }
+}
+</code></pre>
+<p>18:02:40.520 [main] c.TestInterrupt - 获得了锁<br>18:02:40.524 [t1] c.TestInterrupt - 启动…<br>18:02:41.530 [main] c.TestInterrupt - 执行打断<br>java.lang.InterruptedException<br>     at<br>java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireInterruptibly(AbstractQueuedSynchr<br>onizer.java:898)<br>     at<br>java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly(AbstractQueuedSynchron<br>izer.java:1222)<br>     at java.util.concurrent.locks.ReentrantLock.lockInterruptibly(ReentrantLock.java:335)<br>     at cn.itcast.n4.reentrant.TestInterrupt.lambda$main$0(TestInterrupt.java:17)<br>     at java.lang.Thread.run(Thread.java:748)<br>18:02:41.532 [t1] c.TestInterrupt - 等锁的过程中被打断<br>锁超时<br>使用 lock.tryLock 方法会返回获取锁是否成功。如果成功则返回 true ，反之则返回 false 。<br>tryLock 方法可以指定等待时间，参数为：tryLock (long timeout, TimeUnit unit)，其中 timeout 为最长等待时间，TimeUnit 为时间单位。<br>简而言之就是：获取锁失败了、获取超时了或者被打断了，不再阻塞，直接停止运行。<br>不设置等待时间</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>public static void main(String[] args) {<br>        ReentrantLock lock = new ReentrantLock();<br>        Thread t1 = new Thread(() -&gt; {<br>            // 未设置等待时间，一旦获取失败，直接返回false<br>            if(!lock.tryLock()) {<br>                System.out.println(“获取失败”);<br>                // 获取失败，不再向下执行，返回<br>                return;<br>            }<br>            System.out.println(“得到了锁”);<br>            lock.unlock();<br>        });</p>
+<pre><code>    lock.lock();
+    try{
+        t1.start();
+        Thread.sleep(3000);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    } finally {
+        lock.unlock();
+    }
+}
+</code></pre>
+<p>设置等待时间</p>
+<p>JAVA<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br>33<br>public static void main(String[] args) {<br>        ReentrantLock lock = new ReentrantLock();<br>        Thread t1 = new Thread(() -&gt; {<br>            try {<br>                // 判断获取锁是否成功，最多等待1秒<br>                if(!lock.tryLock(1, TimeUnit.SECONDS)) {<br>                    System.out.println(“获取失败”);<br>                    // 获取失败，不再向下执行，直接返回<br>                    return;<br>                }<br>            } catch (InterruptedException e) {<br>                e.printStackTrace();<br>                // 被打断，不再向下执行，直接返回<br>                return;<br>            }<br>            System.out.println(“得到了锁”);<br>            // 释放锁<br>            lock.unlock();<br>        });</p>
+<pre><code>    lock.lock();
+    try{
+        t1.start();
+        // 打断等待
+        t1.interrupt();
+        Thread.sleep(3000);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    } finally {
+        lock.unlock();
+    }
+}
+</code></pre>
+<p>公平锁<br>在线程获取锁失败，进入阻塞队列时，先进入的会在锁被释放后先获得锁。这样的获取方式就是公平的。</p>
+<p>// 默认是不公平锁，需要在创建时指定为公平锁<br>ReentrantLock lock = new ReentrantLock(true);<br>条件变量<br>synchronized 中也有条件变量，就是我们讲原理时那个 waitSet 休息室，当条件不满足时进入 waitSet 等待。ReentrantLock 的条件变量比 synchronized 强大之处在于，它是支持多个条件变量的，这就好比：</p>
+<p>synchronized 是那些不满足条件的线程都在一间休息室等消息。<br>而 ReentrantLock 支持多间休息室，有专门等烟的休息室、专门等早餐的休息室，唤醒时也是按休息室来唤醒.<br>使用要点：</p>
+<p>await 前需要获得锁。<br>await 执行后，会释放锁，进入 conditionObject 等待。<br>await 的线程被唤醒（或打断、或超时）时重新竞争 lock 锁。<br>竞争 lock 锁成功后，从 await 后继续执行。<br>示例：</p>
+<p>JAVA</p>
+<p>public class TestCondition {<br>    static ReentrantLock lock = new ReentrantLock();<br>    static Condition waitCigaretteQueue = lock.newCondition();<br>    static Condition waitbreakfastQueue = lock.newCondition();<br>    static volatile boolean hasCigrette = false;<br>    static volatile boolean hasBreakfast = false;</p>
+<pre><code>public static void main(String[] args) throws InterruptedException {
+    new Thread(() -&gt; {
+        lock.lock();
+        try {
+            while (!hasCigrette) {
+                try {
+                    waitCigaretteQueue.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            log.debug("等到了它的烟");
+        }finally {
+            lock.unlock();
+        }
+    }).start();
+
+    new Thread(() -&gt; {
+        lock.lock();
+        try {
+            while (!hasBreakfast) {
+                try {
+                    waitbreakfastQueue.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            log.debug("等到了它的早餐");
+        }finally {
+            lock.unlock();
+        }
+    }).start();
+
+    Thread.sleep(1000);
+    sendBreakfast();
+    Thread.sleep(1000);
+    sendCigarette();
+}
+
+
+private static void sendCigarette() {
+    lock.lock();
+    try {
+        log.debug("送烟来了");
+        hasCigrette = true;
+        waitCigaretteQueue.signal();
+    }finally {
+        lock.unlock();
+    }
+}
+
+private static void  sendBreakfast() {
+    lock.lock();
+    try {
+        log.debug("送早餐来了");
+        hasBreakfast = true;
+        waitbreakfastQueue.signal();
+    }finally {
+        lock.unlock();
+    }
+}
+</code></pre>
+<p>}<br>输出：</p>
+<p>22:13:53.349 [main] DEBUG com.heu.test.TestCondition - 送早餐来了<br>22:13:53.359 [Thread-1] DEBUG com.heu.test.TestCondition - 等到了它的早餐<br>22:13:54.368 [main] DEBUG com.heu.test.TestCondition - 送烟来了<br>22:13:54.368 [Thread-0] DEBUG com.heu.test.TestCondition - 等到了它的烟</p>
+<h1 id="ReentrantLock"><a href="#ReentrantLock" class="headerlink" title="ReentrantLock"></a>ReentrantLock</h1><p><em>相对于 synchronized 它具备如下特点：</em></p>
+<ul>
+<li>可中断</li>
+<li>可以设置超时时间</li>
+<li>可以设置为公平锁</li>
+<li>支持多个条件变量</li>
+</ul>
+<p><strong>与 synchronized 一样，都支持可重入。</strong></p>
+<p><strong>基本语法：</strong></p>
+<pre><code>// 获取锁
+reentrantLock.lock();
+try {
+     // 临界区
+} finally {
+     // 释放锁
+     reentrantLock.unlock();
+}
+</code></pre>
+<h2 id="可重入"><a href="#可重入" class="headerlink" title="可重入"></a>可重入</h2><ul>
+<li>可重入是指同一个线程如果首次获得了这把锁，那么因为它是这把锁的拥有者，因此有权利再次获取这把锁。</li>
+<li>如果是不可重入锁，那么第二次获得锁时，自己也会被锁挡住。</li>
+</ul>
+<pre><code>@Slf4j
+public class TestReentrantLock {
+    static ReentrantLock lock = new ReentrantLock();
+
+    public static void main(String[] args) {
+        method1();
+    }
+
+    public static void method1() {
+        lock.lock();
+        try {
+            log.debug("method1");
+            method2();
+        }finally {
+            lock.unlock();
+        }
+
+    }
+
+    public static void method2() {
+        lock.lock();
+        try {
+            log.debug("method2");
+            method3();
+        }finally {
+            lock.unlock();
+        }
+
+    }
+
+    public static void method3() {
+        lock.lock();
+        try {
+            log.debug("method3");
+        }finally {
+            lock.unlock();
+        }
+
+    }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code>21:49:13.947 [main] DEBUG com.heu.test.TestReentrantLock - method1
+21:49:13.960 [main] DEBUG com.heu.test.TestReentrantLock - method2
+21:49:13.960 [main] DEBUG com.heu.test.TestReentrantLock - method3
+</code></pre>
+<h2 id="可打断"><a href="#可打断" class="headerlink" title="可打断"></a>可打断</h2><ul>
+<li><p>如果某个线程处于阻塞状态，可以调用其 interrupt 方法让其停止阻塞，获得锁失败。简而言之就是：处于阻塞状态的线程，被<br>打断了就不用阻塞了，直接停止运行。</p>
+</li>
+<li><p>注意如果是不可中断模式，那么即使使用了 interrupt 也不会让等待中断。</p>
+</li>
+</ul>
+<pre><code>public static void main(String[] args) {
+        ReentrantLock lock = new ReentrantLock();
+        Thread t1 = new Thread(() -&gt; {
+            try {
+                // 加锁，可打断锁
+                lock.lockInterruptibly();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                // 被打断，返回，不再向下执行
+                return;
+            }finally {
+                // 释放锁
+                lock.unlock();
+            }
+
+        });
+
+        lock.lock();
+        try {
+            t1.start();
+            Thread.sleep(1000);
+            // 打断
+            t1.interrupt();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+</code></pre>
+<p><strong>输出:</strong></p>
+<pre><code>18:02:40.520 [main] c.TestInterrupt - 获得了锁
+18:02:40.524 [t1] c.TestInterrupt - 启动... 
+18:02:41.530 [main] c.TestInterrupt - 执行打断
+java.lang.InterruptedException 
+     at 
+java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireInterruptibly(AbstractQueuedSynchr
+onizer.java:898) 
+     at 
+java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly(AbstractQueuedSynchron
+izer.java:1222) 
+     at java.util.concurrent.locks.ReentrantLock.lockInterruptibly(ReentrantLock.java:335) 
+     at cn.itcast.n4.reentrant.TestInterrupt.lambda$main$0(TestInterrupt.java:17) 
+     at java.lang.Thread.run(Thread.java:748) 
+18:02:41.532 [t1] c.TestInterrupt - 等锁的过程中被打断
+</code></pre>
+<h2 id="锁超时"><a href="#锁超时" class="headerlink" title="锁超时"></a>锁超时</h2><ul>
+<li><p>使用 lock.tryLock 方法会返回获取锁是否成功。如果成功则返回 true ，反之则返回 false 。</p>
+</li>
+<li><p>tryLock 方法可以指定等待时间，参数为：tryLock (long timeout, TimeUnit unit)，其中 timeout 为最长等待时间，TimeUnit 为时间单位。</p>
+</li>
+<li><p>简而言之就是：获取锁失败了、获取超时了或者被打断了，不再阻塞，直接停止运行。</p>
+</li>
+</ul>
+<p><strong>不设置等待时间</strong></p>
+<pre><code>public static void main(String[] args) {
+        ReentrantLock lock = new ReentrantLock();
+        Thread t1 = new Thread(() -&gt; {
+            // 未设置等待时间，一旦获取失败，直接返回false
+            if(!lock.tryLock()) {
+                System.out.println("获取失败");
+                // 获取失败，不再向下执行，返回
+                return;
+            }
+            System.out.println("得到了锁");
+            lock.unlock();
+        });
+
+
+        lock.lock();
+        try{
+            t1.start();
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+</code></pre>
+<p><strong>设置等待时间</strong></p>
+<pre><code>public static void main(String[] args) {
+        ReentrantLock lock = new ReentrantLock();
+        Thread t1 = new Thread(() -&gt; {
+            try {
+                // 判断获取锁是否成功，最多等待1秒
+                if(!lock.tryLock(1, TimeUnit.SECONDS)) {
+                    System.out.println("获取失败");
+                    // 获取失败，不再向下执行，直接返回
+                    return;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                // 被打断，不再向下执行，直接返回
+                return;
+            }
+            System.out.println("得到了锁");
+            // 释放锁
+            lock.unlock();
+        });
+
+
+        lock.lock();
+        try{
+            t1.start();
+            // 打断等待
+            t1.interrupt();
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+</code></pre>
+<h2 id="公平锁"><a href="#公平锁" class="headerlink" title="公平锁"></a>公平锁</h2><p>在线程获取锁失败，进入阻塞队列时，先进入的会在锁被释放后先获得锁。这样的获取方式就是公平的。</p>
+<pre><code>// 默认是不公平锁，需要在创建时指定为公平锁
+ReentrantLock lock = new ReentrantLock(true);
+</code></pre>
+<h2 id="条件变量"><a href="#条件变量" class="headerlink" title="条件变量"></a>条件变量</h2><p>synchronized 中也有条件变量，就是我们讲原理时那个 waitSet 休息室，当条件不满足时进入 waitSet 等待。ReentrantLock 的条件变量比 synchronized 强大之处在于，它是支持多个条件变量的，这就好比：</p>
+<ul>
+<li><p>synchronized 是那些不满足条件的线程都在一间休息室等消息。</p>
+</li>
+<li><p>而 ReentrantLock 支持多间休息室，有专门等烟的休息室、专门等早餐的休息室，唤醒时也是按休息室来唤醒.</p>
+</li>
+</ul>
+<p><strong>使用要点：</strong></p>
+<ul>
+<li>await 前需要获得锁。</li>
+<li>await 执行后，会释放锁，进入 conditionObject 等待。</li>
+<li>await 的线程被唤醒（或打断、或超时）时重新竞争 lock 锁。</li>
+<li>竞争 lock 锁成功后，从 await 后继续执行。</li>
+</ul>
+<p>示例：</p>
+<pre><code>public class TestCondition {
+    static ReentrantLock lock = new ReentrantLock();
+    static Condition waitCigaretteQueue = lock.newCondition();
+    static Condition waitbreakfastQueue = lock.newCondition();
+    static volatile boolean hasCigrette = false;
+    static volatile boolean hasBreakfast = false;
+
+    public static void main(String[] args) throws InterruptedException {
+        new Thread(() -&gt; {
+            lock.lock();
+            try {
+                while (!hasCigrette) {
+                    try {
+                        waitCigaretteQueue.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                log.debug("等到了它的烟");
+            }finally {
+                lock.unlock();
+            }
+        }).start();
+
+        new Thread(() -&gt; {
+            lock.lock();
+            try {
+                while (!hasBreakfast) {
+                    try {
+                        waitbreakfastQueue.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                log.debug("等到了它的早餐");
+            }finally {
+                lock.unlock();
+            }
+        }).start();
+
+        Thread.sleep(1000);
+        sendBreakfast();
+        Thread.sleep(1000);
+        sendCigarette();
+    }
+
+
+    private static void sendCigarette() {
+        lock.lock();
+        try {
+            log.debug("送烟来了");
+            hasCigrette = true;
+            waitCigaretteQueue.signal();
+        }finally {
+            lock.unlock();
+        }
+    }
+
+    private static void  sendBreakfast() {
+        lock.lock();
+        try {
+            log.debug("送早餐来了");
+            hasBreakfast = true;
+            waitbreakfastQueue.signal();
+        }finally {
+            lock.unlock();
+        }
+    }
+}
+</code></pre>
+<p>输出：</p>
+<pre><code>22:13:53.349 [main] DEBUG com.heu.test.TestCondition - 送早餐来了
+22:13:53.359 [Thread-1] DEBUG com.heu.test.TestCondition - 等到了它的早餐
+22:13:54.368 [main] DEBUG com.heu.test.TestCondition - 送烟来了
+22:13:54.368 [Thread-0] DEBUG com.heu.test.TestCondition - 等到了它的烟
+</code></pre>
+<p>同步模式之顺序控制<br>线程 1 输出 a 5 次，线程 2 输出 b 5 次，线程 3 输出 c 5 次。现在要求输出 abcabcabcabcabc 怎么实现。</p>
+<p>Wait/Notify 实现</p>
+<p> public static void main(String[] args) {<br>        WaitAndNotify waitAndNotify = new WaitAndNotify(1, 5);</p>
+<pre><code>    new Thread(()-&gt;{
+        waitAndNotify.run("a", 1, 2);
+    }).start();
+    new Thread(()-&gt;{
+        waitAndNotify.run("b", 2, 3);
+    }).start();
+    new Thread(()-&gt;{
+        waitAndNotify.run("c", 3, 1);
+    }).start();
+}
+</code></pre>
+<p>}</p>
+<p>class WaitAndNotify {<br>    public void run(String str, int flag, int nextFlag) {<br>        for(int i = 0; i &lt; loopNumber; i++) {<br>            synchronized(this) {<br>                while (flag != this.flag) {<br>                    try {<br>                        this.wait();<br>                    } catch (InterruptedException e) {<br>                        e.printStackTrace();<br>                    }<br>                }<br>                System.out.print(str);<br>                // 设置下一个运行的线程标记<br>                this.flag = nextFlag;<br>                // 唤醒所有线程<br>                this.notifyAll();<br>            }<br>        }<br>    }</p>
+<pre><code>private int flag;
+private int loopNumber;
+
+public WaitAndNotify(int flag, int loopNumber) {
+    this.flag = flag;
+    this.loopNumber = loopNumber;
+}
+</code></pre>
+<p>park/unpary 实现</p>
+<p>public static Thread t1, t2, t3;<br>    public static void main(String[] args) {<br>        ParkAndUnPark obj = new ParkAndUnPark(5);<br>        t1 = new Thread(() -&gt; {<br>            obj.run(“a”, t2);<br>        });</p>
+<pre><code>    t2 = new Thread(() -&gt; {
+        obj.run("b", t3);
+    });
+
+    t3 = new Thread(() -&gt; {
+        obj.run("c", t1);
+    });
+    t1.start();
+    t2.start();
+    t3.start();
+
+    LockSupport.unpark(t1);
+}
+</code></pre>
+<p>}</p>
+<p>class ParkAndUnPark {<br>    public void run(String str, Thread nextThread) {<br>        for(int i = 0; i &lt; loopNumber; i++) {<br>            LockSupport.park();<br>            System.out.print(str);<br>            LockSupport.unpark(nextThread);<br>        }<br>    }</p>
+<pre><code>private int loopNumber;
+
+public ParkAndUnPark(int loopNumber) {
+    this.loopNumber = loopNumber;
+}
+</code></pre>
+<p>await/signal 实现</p>
+<p>public static void main(String[] args) {<br>        AwaitAndSignal lock = new AwaitAndSignal(5);<br>        Condition a = lock.newCondition();<br>        Condition b = lock.newCondition();<br>        Condition c = lock.newCondition();<br>        new Thread(() -&gt; {<br>            lock.run(“a”, a, b);<br>        }).start();</p>
+<pre><code>    new Thread(() -&gt; {
+        lock.run("b", b, c);
+    }).start();
+
+    new Thread(() -&gt; {
+        lock.run("c", c, a);
+    }).start();
+
+    try {
+        Thread.sleep(1000);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+
+    lock.lock();
+    try {
+        a.signal();
+    }finally {
+        lock.unlock();
+    }
+}
+</code></pre>
+<p>}</p>
+<p>class AwaitAndSignal extends ReentrantLock {<br>    public void run(String str, Condition current, Condition nextCondition) {<br>        for(int i = 0; i &lt; loopNumber; i++) {<br>            lock();<br>            try {<br>                current.await();<br>                System.out.print(str);<br>                nextCondition.signal();<br>            } catch (InterruptedException e) {<br>                e.printStackTrace();<br>            } finally {<br>                unlock();<br>            }<br>        }<br>    }</p>
+<pre><code>private int loopNumber;
+
+public AwaitAndSignal(int loopNumber) {
+    this.loopNumber = loopNumber;
+}
+</code></pre>
+<p>同步模式之顺序控制<br>线程 1 输出 a 5 次，线程 2 输出 b 5 次，线程 3 输出 c 5 次。现在要求输出 abcabcabcabcabc 怎么实现。</p>
+<p>Wait/Notify 实现</p>
+<p> public static void main(String[] args) {<br>        WaitAndNotify waitAndNotify = new WaitAndNotify(1, 5);</p>
+<pre><code>    new Thread(()-&gt;{
+        waitAndNotify.run("a", 1, 2);
+    }).start();
+    new Thread(()-&gt;{
+        waitAndNotify.run("b", 2, 3);
+    }).start();
+    new Thread(()-&gt;{
+        waitAndNotify.run("c", 3, 1);
+    }).start();
+}
+</code></pre>
+<p>}</p>
+<p>class WaitAndNotify {<br>    public void run(String str, int flag, int nextFlag) {<br>        for(int i = 0; i &lt; loopNumber; i++) {<br>            synchronized(this) {<br>                while (flag != this.flag) {<br>                    try {<br>                        this.wait();<br>                    } catch (InterruptedException e) {<br>                        e.printStackTrace();<br>                    }<br>                }<br>                System.out.print(str);<br>                // 设置下一个运行的线程标记<br>                this.flag = nextFlag;<br>                // 唤醒所有线程<br>                this.notifyAll();<br>            }<br>        }<br>    }</p>
+<pre><code>private int flag;
+private int loopNumber;
+
+public WaitAndNotify(int flag, int loopNumber) {
+    this.flag = flag;
+    this.loopNumber = loopNumber;
+}
+</code></pre>
+<p>park/unpary 实现</p>
+<p>public static Thread t1, t2, t3;<br>    public static void main(String[] args) {<br>        ParkAndUnPark obj = new ParkAndUnPark(5);<br>        t1 = new Thread(() -&gt; {<br>            obj.run(“a”, t2);<br>        });</p>
+<pre><code>    t2 = new Thread(() -&gt; {
+        obj.run("b", t3);
+    });
+
+    t3 = new Thread(() -&gt; {
+        obj.run("c", t1);
+    });
+    t1.start();
+    t2.start();
+    t3.start();
+
+    LockSupport.unpark(t1);
+}
+</code></pre>
+<p>}</p>
+<p>class ParkAndUnPark {<br>    public void run(String str, Thread nextThread) {<br>        for(int i = 0; i &lt; loopNumber; i++) {<br>            LockSupport.park();<br>            System.out.print(str);<br>            LockSupport.unpark(nextThread);<br>        }<br>    }</p>
+<pre><code>private int loopNumber;
+
+public ParkAndUnPark(int loopNumber) {
+    this.loopNumber = loopNumber;
+}
+</code></pre>
+<p>await/signal 实现</p>
+<p>public static void main(String[] args) {<br>        AwaitAndSignal lock = new AwaitAndSignal(5);<br>        Condition a = lock.newCondition();<br>        Condition b = lock.newCondition();<br>        Condition c = lock.newCondition();<br>        new Thread(() -&gt; {<br>            lock.run(“a”, a, b);<br>        }).start();</p>
+<pre><code>    new Thread(() -&gt; {
+        lock.run("b", b, c);
+    }).start();
+
+    new Thread(() -&gt; {
+        lock.run("c", c, a);
+    }).start();
+
+    try {
+        Thread.sleep(1000);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+
+    lock.lock();
+    try {
+        a.signal();
+    }finally {
+        lock.unlock();
+    }
+}
+</code></pre>
+<p>}</p>
+<p>class AwaitAndSignal extends ReentrantLock {<br>    public void run(String str, Condition current, Condition nextCondition) {<br>        for(int i = 0; i &lt; loopNumber; i++) {<br>            lock();<br>            try {<br>                current.await();<br>                System.out.print(str);<br>                nextCondition.signal();<br>            } catch (InterruptedException e) {<br>                e.printStackTrace();<br>            } finally {<br>                unlock();<br>            }<br>        }<br>    }</p>
+<pre><code>private int loopNumber;
+
+public AwaitAndSignal(int loopNumber) {
+    this.loopNumber = loopNumber;
+}
+</code></pre>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://example.com">阿健君</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2020/09/03/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E5%90%8C%E6%AD%A5%E9%94%81/">http://example.com/2020/09/03/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E5%90%8C%E6%AD%A5%E9%94%81/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">HJ 的学习录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Monitor/">Monitor</a><a class="post-meta__tags" href="/tags/synchronized/">synchronized</a><a class="post-meta__tags" href="/tags/wait-notify/">wait/notify</a><a class="post-meta__tags" href="/tags/park-unpark/">park/unpark</a><a class="post-meta__tags" href="/tags/ReentrantLock/">ReentrantLock</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/synchronized.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer=""></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="微信扫码"></a><div class="post-qr-code-desc">微信扫码</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="支付宝扫码"></a><div class="post-qr-code-desc">支付宝扫码</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/09/05/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20synchronized%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/"><img class="prev-cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/synchronized.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">多线程与高并发 — synchronized底层原理</div></div></a></div><div class="next-post pull-right"><a href="/2020/08/31/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E3%80%81%E6%96%B9%E6%B3%95/"><img class="next-cover" src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/thread1.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">多线程与高并发 — 线程基础、方法</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2020/09/05/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20synchronized%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/" title="多线程与高并发 — synchronized底层原理"><img class="cover" src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/synchronized.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-09-05</div><div class="title">多线程与高并发 — synchronized底层原理</div></div></a></div></div></div><hr><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div id="comment-switch"><span class="first-comment">Valine</span><span class="switch-btn"></span><span class="second-comment">Disqus</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div><div><div id="disqus_thread"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"></div><div class="author-info__name">阿健君</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">62</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">105</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">22</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>qq:1064821280</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/junian455" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/1064821280@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="https://junian455.github.io/" target="_blank" title="Blog"><i class="fas fa-rss-square"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">哈喽，有问题的话请在留言板留言，我看到会第一时间回复你。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E6%A8%A1%E5%9E%8B%E4%B9%8B%E7%AE%A1%E7%A8%8B"><span class="toc-text">共享模型之管程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E5%85%B1%E4%BA%AB%E5%B8%A6%E6%9D%A5%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">线程共享带来的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#synchronized-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">synchronized 解决方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#synchronized-%E5%8A%A0%E5%9C%A8%E6%96%B9%E6%B3%95%E4%B8%8A"><span class="toc-text">synchronized 加在方法上</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%80%E8%B0%93%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%85%AB%E9%94%81"><span class="toc-text">所谓的线程八锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90"><span class="toc-text">变量的线程安全分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E5%92%8C%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90"><span class="toc-text">成员变量和静态变量的线程安全分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90"><span class="toc-text">局部变量线程安全分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%B1%BB"><span class="toc-text">常见线程安全类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E5%88%86%E6%9E%90-%E2%80%94-%E5%8D%96%E7%A5%A8"><span class="toc-text">案例分析 — 卖票</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Monitor-%E6%A6%82%E5%BF%B5"><span class="toc-text">Monitor 概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-%E5%AF%B9%E8%B1%A1%E5%A4%B4"><span class="toc-text">Java 对象头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Monitor-%E5%8E%9F%E7%90%86"><span class="toc-text">Monitor 原理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#wait-%E5%92%8C-notify"><span class="toc-text">wait 和 notify</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Wait-%E4%B8%8E-Sleep-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">Wait 与 Sleep 的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E9%9B%85%E5%9C%B0%E4%BD%BF%E7%94%A8-wait-notify"><span class="toc-text">优雅地使用 wait/notify</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ReentrantLock"><span class="toc-text">ReentrantLock</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%AF%E9%87%8D%E5%85%A5"><span class="toc-text">可重入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%AF%E6%89%93%E6%96%AD"><span class="toc-text">可打断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%81%E8%B6%85%E6%97%B6"><span class="toc-text">锁超时</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AC%E5%B9%B3%E9%94%81"><span class="toc-text">公平锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F"><span class="toc-text">条件变量</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理"><img src="https://cdn.jsdelivr.net/gh/zhangc233/pic@master/img/%E7%BA%A2%E9%BB%912%E6%A0%91.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="红黑树原理"></a><div class="content"><a class="title" href="/2022/04/16/collection/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%8E%9F%E7%90%86/" title="红黑树原理">红黑树原理</a><time datetime="2022-04-16T02:55:00.000Z" title="发表于 2022-04-16 10:55:00">2022-04-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="设计模式-行为型设计模式"></a><div class="content"><a class="title" href="/2022/04/02/design/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" title="设计模式-行为型设计模式">设计模式-行为型设计模式</a><time datetime="2022-04-02T08:11:00.000Z" title="发表于 2022-04-02 16:11:00">2022-04-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/cache.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="怎么利用Redis实现数据的去重？"></a><div class="content"><a class="title" href="/2022/03/14/redis/%E6%80%8E%E4%B9%88%E5%88%A9%E7%94%A8Redis%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8E%BB%E9%87%8D%EF%BC%9F/" title="怎么利用Redis实现数据的去重？">怎么利用Redis实现数据的去重？</a><time datetime="2022-03-14T06:29:00.000Z" title="发表于 2022-03-14 14:29:00">2022-03-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/seata.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SEATA"></a><div class="content"><a class="title" href="/2022/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/SEATA/" title="SEATA">SEATA</a><time datetime="2022-01-20T07:11:00.000Z" title="发表于 2022-01-20 15:11:00">2022-01-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务"><img src="https://cdn.jsdelivr.net/gh/junian455/pic@master/img/traditional.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="分布式事务"></a><div class="content"><a class="title" href="/2022/01/10/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" title="分布式事务">分布式事务</a><time datetime="2022-01-10T03:11:00.000Z" title="发表于 2022-01-10 11:11:00">2022-01-10</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">©2020 - 2022 By 阿健君</div><div class="footer_custom_text"><span style="margin-top:5px;display:inline-block;font-weight:bold;font-size:14px">一分耕耘，一分收获。</span><p></p> <p><a target="_blank" href="https://hexo.io/"><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" title="博客框架为Hexo" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://demo.jerryc.me/"><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" title="主题采用butterfly" data-ll-status="loading" class="entered loading"></a>&nbsp;<a target="_blank" href="https://metroui.org.ua/index.html "><img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=flat&amp;logo=jsDelivr" title="本站使用JsDelivr为静态资源提供CDN加速" data-ll-status="loading" class="entered loading"></a> &nbsp;<a target="_blank" href="https://vercel.com/ "><img src="https://img.shields.io/badge/Hosted-Vervel-brightgreen?style=flat&amp;logo=Vercel" title="本站采用双线部署，默认线路托管于Vercel" data-ll-status="loading" class="entered loading"></a>&nbsp;<a class="github-badge" target="_blank" href="https://beian.miit.gov.cn" style="margin-inline:5px" title="本站已在工信部备案，备案号浙ICP备-2022001668号"><img src="http://cdn.ymktchic.top/img/202201212329189.svg" data-lazy-src="" alt="" data-ll-status="loaded" class="entered loaded"></a>&nbsp;<a target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img src="https://img.shields.io/badge/Copyright-BY--NC--SA%204.0-d42328?style=flat&amp;logo=Claris" title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" data-ll-status="loading" class="entered loading"></a> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="95" height="20" role="img" aria-label="CDN:又拍云"><title>CDN:又拍云</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"></stop><stop offset="1" stop-opacity=".1"></stop></linearGradient><clipPath id="r"><rect width="95" height="20" rx="3" fill="#fff"></rect></clipPath><g clip-path="url(#r)"><rect width="52" height="20" fill="#555"></rect><rect x="52" width="43" height="20" fill="#00b6ff"></rect><rect width="95" height="20" fill="url(#s)"></rect></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110"><image x="5" y="3" width="14" height="14" xlink:href="https://developer.qiniu.com/assets/logo-white-b90d685a6b146884636382426d11b7236f5f7ca1c5dfafdb6fa777a0f976fc1f.png"></image><text aria-hidden="true" x="355" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="250">CDN</text><text x="355" y="140" transform="scale(.1)" fill="#fff" textLength="250">CDN</text><text aria-hidden="true" x="725" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="330">七牛云</text><text x="725" y="140" transform="scale(.1)" fill="#fff" textLength="330">七牛云</text></g></svg></p></div></div><div class="container" id="jsi-flying-fish-container"></div><style>@media only screen and (max-width: 767px){
+  #sidebar_search_box input[type=text]{width:calc(100% - 24px)}
+}</style></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">本地搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"></div></div><hr><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script><script>function loadDisqus () {
+  var disqus_config = function () {
+    this.page.url = 'http://example.com/2020/09/03/thread/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B8%8E%E9%AB%98%E5%B9%B6%E5%8F%91%20%E2%80%94%20%E5%90%8C%E6%AD%A5%E9%94%81/'
+    this.page.identifier = '2020/09/03/thread/多线程与高并发 — 同步锁/'
+    this.page.title = '多线程与高并发 — 同步锁'
+  };
+
+  window.disqusReset = () => {
+    DISQUS.reset({
+      reload: true,
+      config: disqus_config
+    })
+  }
+
+  if (window.DISQUS) disqusReset()
+  else {
+    (function() { 
+      var d = document, s = d.createElement('script');
+      s.src = 'https://.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  }
+}
+
+if ('Valine' === 'Disqus' || !true) {
+  if (true) btf.loadComment(document.getElementById('disqus_thread'), loadDisqus)
+  else loadDisqus()
+} else {
+  function loadOtherComment () {
+    loadDisqus()
+  }
+}
+</script></div><script src="/js/card_categor_hide.js"></script><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script data-pjax="" src="https://cdn.jsdelivr.net/gh/Jnylife/CDN@1.3/js/fish.js"></script><script src="https://cdn.jsdelivr.net/gh/sviptzk/HexoStaticFile@latest/Hexo/js/WithoutLine.min.js"></script><div class="aplayer no-destroy" data-id="60198" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script async="" data-pjax="" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
